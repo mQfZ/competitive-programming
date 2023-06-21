@@ -1,7 +1,10 @@
-require('luasnip.loaders.from_vscode').load_standalone({
-    path = '~/proj/cp/.vscode/cp.code-snippets'
-})
+-- See: https://github.com/mQfZ/dotfiles/tree/master/nvim for more info about
+-- configuration.
+local current_directory = '~/proj/cp'
 
+require('luasnip.loaders.from_vscode').load_standalone({
+    path = current_directory .. '/.vscode/cp.code-snippets'
+})
 
 local Terminal = require('toggleterm.terminal').Terminal
 
@@ -31,7 +34,7 @@ local function create_terminal(command)
 end
 
 
-vim.env.PYTHONPATH = vim.fn.expand('~/proj/cp')
+vim.env.PYTHONPATH = vim.fn.expand(current_directory)
 
 vim.filetype.add({
     extension = {
