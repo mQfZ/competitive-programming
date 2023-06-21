@@ -1,0 +1,8 @@
+/notes
+/.nvim-snippets
+/.vscode/cp.code-snippets
+f*.in
+f*.out
+__pycache__/
+*.gch
+.DS_Store

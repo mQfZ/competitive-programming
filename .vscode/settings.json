@@ -1,0 +1,8 @@
+{
+    "competitiveProgramming.enabled": true,
+    "workbench.editor.focusRecentEditorAfterClose": false,
+    "editor.snippetSuggestions": "none",
+    "editor.quickSuggestions": {
+        "other": "off"
+    },
+}

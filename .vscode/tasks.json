@@ -1,0 +1,525 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compile",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "compile", "-mf", "${file}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Compile Rule",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "compile", "-mf", "${file}",
+                     "-mr", "${input:mainRule}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Input",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "input", "-mf", "${file}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Input Rule",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "input", "-mf", "${file}",
+                     "-mr", "${input:mainRule}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Input Times",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "input", "-mf", "${file}",
+                     "-t", "${input:timesInput}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Input Rule Times",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "input", "-mf", "${file}",
+                     "-mr", "${input:mainRule}", "-t", "${input:timesInput}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Run",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "run", "-mf", "${file}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Run Rule",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "run", "-mf", "${file}",
+                     "-mr", "${input:mainRule}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Check",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "check", "-mf", "${file}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Check Rule",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "check", "-mf", "${file}",
+                     "-mr", "${input:mainRule}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Counter Test Case",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "countertc", "-mf", "${file}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Counter Test Case Open",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "countertc", "-mf", "${file}", "-v"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Counter Test Case Rule",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "countertc", "-mf", "${file}",
+                     "-mr", "${input:mainRule}", "-cr", "${input:correctRule}",
+                     "-gr", "${input:generatorRule}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Counter Test Case Rule Open",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "countertc", "-mf", "${file}",
+                     "-mr", "${input:mainRule}", "-cr", "${input:correctRule}",
+                     "-gr", "${input:generatorRule}", "-v"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Counter Test Case File",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "countertc", "-mf", "${file}",
+                     "-cf", "${fileDirname}/${input:correctFile}",
+                     "-gf", "${fileDirname}/${input:generatorFile}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Counter Test Case File Open",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "countertc", "-mf", "${file}",
+                     "-cf", "${fileDirname}/${input:correctFile}",
+                     "-gf", "${fileDirname}/${input:generatorFile}",
+                     "-v"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Counter Test Case Rule File",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "countertc", "-mf", "${file}",
+                     "-mr", "${input:mainRule}", "-cf",
+                     "${fileDirname}/${input:correctFile}", "-cr",
+                     "${input:correctRule}", "-gf",
+                     "${fileDirname}/${input:generatorFile}", "-gr",
+                     "${input:generatorRule}"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Counter Test Case Rule File Open",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "countertc", "-mf", "${file}",
+                     "-mr", "${input:mainRule}", "-cf",
+                     "${fileDirname}/${input:correctFile}", "-cr",
+                     "${input:correctRule}", "-gf",
+                     "${fileDirname}/${input:generatorFile}", "-gr",
+                     "${input:generatorRule}", "-v"],
+            "group": {
+                "kind": "test"
+            },
+            "presentation": {
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "Generate File",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "genfile", "-s",
+                     "-b", "${fileDirname}",
+                     "-t", "${input:template}", "${input:genFile}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate File Open",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "genfile", "-s", "-v", "-b",
+                     "${fileDirname}", "-t", "${input:template}",
+                     "${input:genFile}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate File Rule",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "genfile", "-s", "-b",
+                     "${fileDirname}", "-r", "${input:mainRule}", "-t",
+                     "${input:template}", "${input:genFile}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate File Rule Open",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "genfile", "-s", "-v", "-b",
+                     "${fileDirname}", "-r", "${input:mainRule}", "-t",
+                     "${input:template}", "${input:genFile}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate Input",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "geninput", "-s", "-b",
+                     "${fileDirname}", "${input:ioPath}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate Input Open",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "geninput", "-s", "-v", "-b",
+                     "${fileDirname}", "${input:ioPath}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate Contest",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "gencontest", "-s", "-b",
+                     "src/${input:contestPath}", "-r", "${input:mainRule}",
+                     "-t", "${input:template}", "${input:taskPaths}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate Contest Open",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "gencontest", "-s", "-v", "-b",
+                     "src/${input:contestPath}", "-r", "${input:mainRule}",
+                     "-t", "${input:template}", "${input:taskPaths}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate Snippets",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "gensnippets"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Remove Comments",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "removecomments", "-mf",
+                     "${file}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        },
+        {
+            "label": "Remove Comments Rule",
+            "type": "process",
+            "command": "python3",
+            "args": ["-m", "cphelper", "removecomments", "-mf",
+                     "${file}", "-mr", "${input:mainRule}"],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "panel": "shared",
+                "reveal": "never",
+                "close": true
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "mainRule",
+            "type": "pickString",
+            "description": "Rule to compile main file",
+            "options": [
+                "cpp",
+                "cpp-debug",
+                "python",
+                "cppheader",
+                "cppheader-debug"
+            ],
+            "default": "cpp-debug"
+        },
+        {
+            "id": "correctRule",
+            "type": "pickString",
+            "description": "Rule to compile correct file",
+            "options": [
+                "cpp",
+                "cpp-debug",
+                "python",
+                "cppheader",
+                "cppheader-debug"
+            ],
+            "default": "cpp-debug"
+        },
+        {
+            "id": "generatorRule",
+            "type": "pickString",
+            "description": "Rule to compile generator file",
+            "options": [
+                "cpp",
+                "cpp-debug",
+                "python",
+                "cppheader",
+                "cppheader-debug"
+            ],
+            "default": "cpp-debug"
+        },
+        {
+            "id": "timesInput",
+            "type": "promptString",
+            "description": "Number of times to run input",
+            "default": "1"
+        },
+        {
+            "id": "correctFile",
+            "type": "promptString",
+            "description": "Relative path of correct/brute file"
+        },
+        {
+            "id": "generatorFile",
+            "type": "promptString",
+            "description": "Relative path of generator file"
+        },
+        {
+            "id": "genFile",
+            "type": "promptString",
+            "description": "Name of file relative to currently opened file",
+            "default": "main.cpp"
+        },
+        {
+            "id": "ioPath",
+            "type": "promptString",
+            "description": "Path of input/output file",
+            "default": "1"
+        },
+        {
+            "id": "contestPath",
+            "type": "promptString",
+            "description": "Path of contest directory"
+        },
+        {
+            "id": "template",
+            "type": "pickString",
+            "description": "Template Name?",
+            "options": [
+                "debug",
+                "empty",
+                "minimal",
+                "usaco"
+            ],
+            "default": "minimal"
+        },
+        {
+            "id": "taskPaths",
+            "type": "promptString",
+            "description": "Name for problems to generate"
+        }
+    ]
+}
