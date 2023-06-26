@@ -514,7 +514,7 @@
                 "minimal",
                 "usaco"
             ],
-            "default": "minimal"
+            "default": "debug"
         },
         {
             "id": "taskPaths",
