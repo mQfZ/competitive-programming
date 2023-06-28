@@ -6,37 +6,51 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#pragma once
 
+// #define DBG_ITERABLE_LENGTH 20
+// #define DBG_MAX_PATH_LENGTH 20
+// #define DBG_NO_HIDE_DEBUG_TYPE_NAME
+// #define DBG_NO_HIDE_STD_TYPE_NAME
+// #define DBG_SHOW_PATH
+// #define DBG_SHOW_FUNCTION_NAME
+
+// First X items to show in an interable.
 #ifndef DBG_ITERABLE_LENGTH
 #define DBG_ITERABLE_LENGTH 20
+#endif
+
+// Max length of the path of the file.
+#ifndef DBG_MAX_PATH_LENGTH
+#define DBG_MAX_PATH_LENGTH 20
+#endif
+
+// Shorten debug types.
+// std::__debug::vector<int> -> std::vector<int>
+#ifndef DBG_NO_HIDE_DEBUG_TYPE_NAME
+#define DBG_HIDE_DEBUG_TYPE_NAME
+#endif
+
+// Shorten std types.
+// std::vector<int> -> vector<int>
+#ifndef DBG_NO_HIDE_STD_TYPE_NAME
+#define DBG_HIDE_STD_TYPE_NAME
+#endif
+
+// Show path.
+#ifndef DBG_SHOW_PATH
+#define DBG_NO_SHOW_PATH
+#endif
+
+// Show function name.
+#ifndef DBG_SHOW_FUNCTION_NAME
+#define DBG_NO_SHOW_FUNCTION_NAME
 #endif
 
 namespace dbg {
 
 template <typename T>
 class type_tag {};
-
-template <typename T>
-auto get_type_name(type_tag<T>) {
-    std::string name, prefix, suffix;
-
-#ifdef __clang__
-    name = __PRETTY_FUNCTION__;
-    prefix = "auto dbg::get_type_name(type_tag<T>) [T = ";
-    suffix = "]";
-#elif defined(__GNUC__)
-    name = __PRETTY_FUNCTION__;
-    prefix = "auto dbg::get_type_name(type_tag<T>) [with T = ";
-    suffix = "]";
-#elif defined(_MSC_VER)
-    name = __FUNCSIG__;
-    prefix = "auto __cdecl dbg::get_type_name<";
-    suffix = " >)";
-#endif
-
-    return name.substr(prefix.size(),
-        name.size() - prefix.size() - suffix.size());
-}
 
 template <typename T>
 std::string type_name() {
@@ -64,6 +78,48 @@ std::string type_name() {
         return type_name<typename std::remove_reference<T>::type>() + "&&";
     }
     return get_type_name(type_tag<T>{});
+}
+
+inline std::string replace_all(std::string str,
+        const std::string& from, const std::string& to) {
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+    return str;
+}
+
+template <typename T>
+auto get_type_name(type_tag<T>) {
+    std::string name, prefix, suffix;
+
+#ifdef __clang__
+    name = __PRETTY_FUNCTION__;
+    prefix = "auto dbg::get_type_name(type_tag<T>) [T = ";
+    suffix = "]";
+#elif defined(__GNUC__)
+    name = __PRETTY_FUNCTION__;
+    prefix = "auto dbg::get_type_name(type_tag<T>) [with T = ";
+    suffix = "]";
+#elif defined(_MSC_VER)
+    name = __FUNCSIG__;
+    prefix = "auto __cdecl dbg::get_type_name<";
+    suffix = " >)";
+#endif
+
+    std::string final = name.substr(prefix.size(),
+        name.size() - prefix.size() - suffix.size());
+
+#ifdef DBG_HIDE_DEBUG_TYPE_NAME
+    final = replace_all(final, "__debug::", "");
+#endif
+
+#ifdef DBG_HIDE_STD_TYPE_NAME
+    final = replace_all(final, "std::", "");
+#endif
+
+    return final;
 }
 
 inline std::string get_type_name(type_tag<short>) {
@@ -319,7 +375,7 @@ inline void pretty_print_deque(std::ostream& stream, T queue) {
 
 template <typename T>
 inline bool pretty_print(std::ostream& stream, const std::deque<T>& value) {
-   pretty_print_deque(stream, value);
+    pretty_print_deque(stream, value);
     return true;
 }
 
@@ -365,9 +421,33 @@ class DebugOutput {
   public:
     using expr_t = const char*;
 
-    DebugOutput(const char* filepath, int line, const char* function_name) {
+    DebugOutput(const char* filepath, int line, const char* function_name,
+            bool _newline = true) : newline(_newline) {
+        std::string path = filepath;
+        std::string funcname = function_name;
+    
         std::stringstream ss;
-        ss << ansi(ANSI_DEBUG) << "[" << line << "] " << ansi(ANSI_RESET);
+        ss << ansi(ANSI_DEBUG) << "[";
+
+#ifndef DBG_NO_SHOW_PATH
+        const std::size_t path_length = path.length();
+        if (path_length > DBG_MAX_PATH_LENGTH) {
+            path = ".." + path.substr(path_length - DBG_MAX_PATH_LENGTH,
+                    DBG_MAX_PATH_LENGTH);
+        }
+        ss << path << ":";
+        ss << line << " ("
+            << function_name << ")] " << ansi(ANSI_RESET);
+#endif
+
+        ss << line;
+
+#ifndef DBG_NO_SHOW_FUNCTION_NAME
+        ss << " (" << funcname << ")";
+#endif
+
+        ss << "] " << ansi(ANSI_RESET);
+
         location = ss.str();
     }
 
@@ -383,11 +463,12 @@ class DebugOutput {
         }
         auto&& ret = print_impl(exprs.begin(), types.begin(),
             std::forward<T>(values)...);
-        std::cerr << std::endl;
+        if (newline)
+            std::cerr << std::endl;
         return ret;
     }
 
-  private:
+  protected:
     template <typename T>
     T&& print_impl(const expr_t* expr, const std::string* type, T&& value) {
         const T& ref = value;
@@ -427,6 +508,7 @@ class DebugOutput {
     }
 
     std::string location;
+    bool newline;
 
     static constexpr const char* const ANSI_EMPTY = "";
     static constexpr const char* const ANSI_DEBUG = "\x1b[02m";
@@ -492,4 +574,9 @@ class DebugOutput {
 #define dbg(...)                                    \
   dbg::DebugOutput(__FILE__, __LINE__, __func__)    \
       .print({DBG_MAP(DBG_STRINGIFY, __VA_ARGS__)}, \
+             {DBG_MAP(DBG_TYPE_NAME, __VA_ARGS__)}, __VA_ARGS__)
+
+#define dbgn(...)                                           \
+  dbg::DebugOutput(__FILE__, __LINE__, __func__, false)     \
+      .print({DBG_MAP(DBG_STRINGIFY, __VA_ARGS__)},         \
              {DBG_MAP(DBG_TYPE_NAME, __VA_ARGS__)}, __VA_ARGS__)
