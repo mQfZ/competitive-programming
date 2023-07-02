@@ -141,7 +141,8 @@ class TestCase:
                                           for tct in TEST_CASE_TYPE_LIST)
             warning(f"Too many testcase types ({joined_test_types}) "
                     f"with lowest priority {lowest_priority} "
-                    f"fits id: {color_full_id}.")
+                    f"fits id: {color_full_id}. Defaulting to "
+                    f"{Color.CYAN}{testcase_types[0].name}{Color.RESET}")
         
         return testcase_types[0].split_full_id(full_id)
     

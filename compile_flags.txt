@@ -1,6 +1,6 @@
--x
-c++
+--language=c++
 -std=c++17
+-stdlib=libstdc++
 -O2
 -Wall
 -Wextra
@@ -22,7 +22,8 @@ c++
 -fno-sanitize-recover=all
 -fstack-protector-all
 -Icphelper/library/cpp/header
--Icphelper/library/cpp/header/bits/debug
+-I/usr/local/include/c++/13
+-I/usr/local/include/c++/13/x86_64-apple-darwin22
 -D_FORTIFY_SOURCE=2
 -D_GLIBCXX_DEBUG
 -D_GLIBCXX_DEBUG_PEDANTIC

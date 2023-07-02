@@ -34,7 +34,7 @@ local function create_terminal(command)
 end
 
 
-vim.env.PYTHONPATH = vim.fn.expand(current_directory)
+vim.env.PYTHONPATH = vim.fn.expand(current_directory())
 
 vim.filetype.add({
     extension = {

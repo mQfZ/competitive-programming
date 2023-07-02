@@ -69,7 +69,8 @@ class FileRule(CommandRule):
                                          for rule in priority[True])
 
                 warning(f"Too many command rules ({joined_rules}) "
-                        f"with priority for file: {color_file}.")
+                        f"with priority for file: {color_file}. Defaulting to "
+                        f"{Color.CYAN}{command_rule.name}{Color.RESET}")
             
             else:
                 warning(f"No command rules with priority for "
@@ -85,7 +86,9 @@ class FileRule(CommandRule):
                                          for rule in priority[False])
 
                     warning(f"Too many command rules ({joined_rules}) "
-                            f"with non-priority for file: {color_file}.")
+                            f"with non-priority for file: {color_file}. "
+                            f"Defaulting to "
+                            f"{Color.CYAN}{command_rule.name}{Color.RESET}")
                 
                 else:
                     raise RuleError(f"No command rules for file: "
