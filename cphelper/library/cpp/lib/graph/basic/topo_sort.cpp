@@ -12,7 +12,7 @@ using namespace std;
  * Verification: https://codeforces.com/contest/919/submission/207096730
  */
 
-vector<int> topoSort(vector<vector<int>>& adj) {
+vector<int> topo_sort(vector<vector<int>>& adj) {
     int n = (int) adj.size();
     vector<int> in(n), ret;
     for (auto& li : adj) for (int v : li) ++in[v];

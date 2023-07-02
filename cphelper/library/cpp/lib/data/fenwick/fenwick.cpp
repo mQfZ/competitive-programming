@@ -14,11 +14,11 @@ using namespace std;
  */
 
 template <typename T>
-struct Fenwick {
+struct fenwick {
     int n;
     vector<T> tree;
 
-    Fenwick(int _n) : n(_n) {
+    fenwick(int _n) : n(_n) {
         tree.resize(n);
     }
 
