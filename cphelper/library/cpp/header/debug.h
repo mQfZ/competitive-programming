@@ -1,12 +1,33 @@
-#include <algorithm>
-#include <iostream>
-#include <queue>
-#include <sstream>
-#include <stack>
-#include <string>
-#include <tuple>
-#include <vector>
-#pragma once
+/*****************************************************************************
+
+                                dbg(...) macro
+
+License (MIT):
+
+  Copyright (c) 2019 David Peter <mail@david-peter.de>
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+*****************************************************************************/
+
+#ifndef DBG_MACRO_DBG_H
+#define DBG_MACRO_DBG_H
 
 // #define DBG_ITERABLE_LENGTH 20
 // #define DBG_MAX_PATH_LENGTH 20
@@ -47,159 +68,444 @@
 #define DBG_NO_SHOW_FUNCTION_NAME
 #endif
 
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#define DBG_MACRO_UNIX
+#elif defined(_MSC_VER)
+#define DBG_MACRO_WINDOWS
+#endif
+
+// #ifndef DBG_MACRO_NO_WARNING
+// #pragma message("WARNING: the 'dbg.h' header is included in your code base")
+// #endif  // DBG_MACRO_NO_WARNING
+
+#include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <ios>
+#include <iostream>
+#include <memory>
+#include <queue>
+#include <sstream>
+#include <stack>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <vector>
+
+#ifdef DBG_MACRO_UNIX
+#include <unistd.h>
+#endif
+
+#if __cplusplus >= 201703L
+#define DBG_MACRO_CXX_STANDARD 17
+#elif __cplusplus >= 201402L
+#define DBG_MACRO_CXX_STANDARD 14
+#else
+#define DBG_MACRO_CXX_STANDARD 11
+#endif
+
+#if DBG_MACRO_CXX_STANDARD >= 17
+#include <optional>
+#include <variant>
+#endif
+
 namespace dbg {
 
+inline bool isColorizedOutputEnabled() {
+#if defined(DBG_MACRO_FORCE_COLOR)
+  return true;
+#elif defined(DBG_MACRO_UNIX)
+  return isatty(fileno(stderr));
+#else
+  return true;
+#endif
+}
+
+struct time {};
+
+namespace pretty_function {
+
+// Compiler-agnostic version of __PRETTY_FUNCTION__ and constants to
+// extract the template argument in `type_name_impl`
+
+#if defined(__clang__)
+#define DBG_MACRO_PRETTY_FUNCTION __PRETTY_FUNCTION__
+static constexpr size_t PREFIX_LENGTH =
+    sizeof("const char *dbg::type_name_impl() [T = ") - 1;
+static constexpr size_t SUFFIX_LENGTH = sizeof("]") - 1;
+#elif defined(__GNUC__) && !defined(__clang__)
+#define DBG_MACRO_PRETTY_FUNCTION __PRETTY_FUNCTION__
+static constexpr size_t PREFIX_LENGTH =
+    sizeof("const char* dbg::type_name_impl() [with T = ") - 1;
+static constexpr size_t SUFFIX_LENGTH = sizeof("]") - 1;
+#elif defined(_MSC_VER)
+#define DBG_MACRO_PRETTY_FUNCTION __FUNCSIG__
+static constexpr size_t PREFIX_LENGTH =
+    sizeof("const char *__cdecl dbg::type_name_impl<") - 1;
+static constexpr size_t SUFFIX_LENGTH = sizeof(">(void)") - 1;
+#else
+#error "This compiler is currently not supported by dbg_macro."
+#endif
+
+}  // namespace pretty_function
+
+// Formatting helpers
+
 template <typename T>
-class type_tag {};
+struct print_formatted {
+  static_assert(std::is_integral<T>::value,
+                "Only integral types are supported.");
+
+  print_formatted(T value, int numeric_base)
+      : inner(value), base(numeric_base) {}
+
+  operator T() const { return inner; }
+
+  const char* prefix() const {
+    switch (base) {
+      case 8:
+        return "0o";
+      case 16:
+        return "0x";
+      case 2:
+        return "0b";
+      default:
+        return "";
+    }
+  }
+
+  T inner;
+  int base;
+};
+
+template <typename T>
+print_formatted<T> hex(T value) {
+  return print_formatted<T>{value, 16};
+}
+
+template <typename T>
+print_formatted<T> oct(T value) {
+  return print_formatted<T>{value, 8};
+}
+
+template <typename T>
+print_formatted<T> bin(T value) {
+  return print_formatted<T>{value, 2};
+}
+
+inline std::string replace_string(std::string str,
+                                  const std::string& from,
+                                  const std::string& to) {
+  size_t start_pos = 0;
+  while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
+  return str;
+}
+
+inline std::string replace_all(std::string str) {
+#ifdef DBG_HIDE_DEBUG_TYPE_NAME
+  str = replace_string(str, "__debug::", "");
+#endif
+#ifdef DBG_HIDE_STD_TYPE_NAME
+  str = replace_string(str, "std::", "");
+#endif
+  return str;
+}
+
+// Implementation of 'type_name<T>()'
+
+template <typename T>
+const char* type_name_impl() {
+  return DBG_MACRO_PRETTY_FUNCTION;
+}
+
+template <typename T>
+struct type_tag {};
+
+template <int&... ExplicitArgumentBarrier, typename T>
+typename std::enable_if<(std::rank<T>::value == 0), std::string>::type
+get_type_name(type_tag<T>) {
+  namespace pf = pretty_function;
+
+  std::string type = type_name_impl<T>();
+  return replace_all(type.substr(pf::PREFIX_LENGTH,
+                                 type.size() - pf::PREFIX_LENGTH - pf::SUFFIX_LENGTH));
+}
 
 template <typename T>
 std::string type_name() {
-    if (std::is_volatile<T>::value && std::is_pointer<T>::value) {
-        return type_name<typename std::remove_volatile<T>::type>() +
-            " volatile";
-    }
-    if (std::is_volatile<T>::value) {
-        return "volatile " +
-            type_name<typename std::remove_volatile<T>::type>();
-    }
-    if (std::is_const<T>::value && std::is_pointer<T>::value) {
-        return type_name<typename std::remove_const<T>::type>() + " const";
-    }
-    if (std::is_const<T>::value) {
-        return "const " + type_name<typename std::remove_const<T>::type>();
-    }
+  if (std::is_volatile<T>::value) {
     if (std::is_pointer<T>::value) {
-        return type_name<typename std::remove_pointer<T>::type>() + "*";
+      return type_name<typename std::remove_volatile<T>::type>() + " volatile";
+    } else {
+      return "volatile " + type_name<typename std::remove_volatile<T>::type>();
     }
-    if (std::is_lvalue_reference<T>::value) {
-        return type_name<typename std::remove_reference<T>::type>() + "&";
+  }
+  if (std::is_const<T>::value) {
+    if (std::is_pointer<T>::value) {
+      return type_name<typename std::remove_const<T>::type>() + " const";
+    } else {
+      return "const " + type_name<typename std::remove_const<T>::type>();
     }
-    if (std::is_rvalue_reference<T>::value) {
-        return type_name<typename std::remove_reference<T>::type>() + "&&";
-    }
-    return get_type_name(type_tag<T>{});
+  }
+  if (std::is_pointer<T>::value) {
+    return type_name<typename std::remove_pointer<T>::type>() + "*";
+  }
+  if (std::is_lvalue_reference<T>::value) {
+    return type_name<typename std::remove_reference<T>::type>() + "&";
+  }
+  if (std::is_rvalue_reference<T>::value) {
+    return type_name<typename std::remove_reference<T>::type>() + "&&";
+  }
+  return get_type_name(type_tag<T>{});
 }
 
-inline std::string replace_all(std::string str,
-        const std::string& from, const std::string& to) {
-    size_t start_pos = 0;
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length();
-    }
-    return str;
-}
+// Prefer bitsize variant over standard integral types
+#define DBG_MACRO_REGISTER_TYPE_ASSOC(t_std, t_bit)             \
+  inline constexpr const char* get_type_name(type_tag<t_std>) { \
+    return std::is_same<t_std, t_bit>::value ? #t_bit : #t_std; \
+  }
 
-template <typename T>
-auto get_type_name(type_tag<T>) {
-    std::string name, prefix, suffix;
+// DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned char, uint8_t)
+// DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned short, uint16_t)
+// DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned int, uint32_t)
+// DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned long, uint64_t)
+// DBG_MACRO_REGISTER_TYPE_ASSOC(signed char, int8_t)
+// DBG_MACRO_REGISTER_TYPE_ASSOC(short, int16_t)
+// DBG_MACRO_REGISTER_TYPE_ASSOC(int, int32_t)
+// DBG_MACRO_REGISTER_TYPE_ASSOC(long, int64_t)
 
-#ifdef __clang__
-    name = __PRETTY_FUNCTION__;
-    prefix = "auto dbg::get_type_name(type_tag<T>) [T = ";
-    suffix = "]";
-#elif defined(__GNUC__)
-    name = __PRETTY_FUNCTION__;
-    prefix = "auto dbg::get_type_name(type_tag<T>) [with T = ";
-    suffix = "]";
-#elif defined(_MSC_VER)
-    name = __FUNCSIG__;
-    prefix = "auto __cdecl dbg::get_type_name<";
-    suffix = " >)";
-#endif
-
-    std::string final = name.substr(prefix.size(),
-        name.size() - prefix.size() - suffix.size());
-
-#ifdef DBG_HIDE_DEBUG_TYPE_NAME
-    final = replace_all(final, "__debug::", "");
-#endif
-
-#ifdef DBG_HIDE_STD_TYPE_NAME
-    final = replace_all(final, "std::", "");
-#endif
-
-    return final;
-}
-
-inline std::string get_type_name(type_tag<short>) {
-    return "short";
-}
-
-inline std::string get_type_name(type_tag<unsigned short>) {
-    return "unsigned short";
-}
-
-inline std::string get_type_name(type_tag<long>) {
-    return "long";
-}
-
-inline std::string get_type_name(type_tag<unsigned long>) {
-    return "unsigned long";
-}
-
-inline std::string get_type_name(type_tag<long long>) {
-    return "long long";
-}
-
-inline std::string get_type_name(type_tag<unsigned long long>) {
-    return "unsigned long long";
-}
+DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned char, unsigned char)
+DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned short, unsigned short)
+DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned int, unsigned int)
+DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned long, unsigned long)
+DBG_MACRO_REGISTER_TYPE_ASSOC(unsigned long long, unsigned long long)
+DBG_MACRO_REGISTER_TYPE_ASSOC(signed char, signed char)
+DBG_MACRO_REGISTER_TYPE_ASSOC(short, short)
+DBG_MACRO_REGISTER_TYPE_ASSOC(int, int)
+DBG_MACRO_REGISTER_TYPE_ASSOC(long, long)
+DBG_MACRO_REGISTER_TYPE_ASSOC(long long, long long)
 
 inline std::string get_type_name(type_tag<std::string>) {
+#ifdef DBG_HIDE_DEBUG_TYPE_NAME
+  return "string";
+#endif
   return "std::string";
 }
 
 template <typename T>
-std::string get_type_name(type_tag<std::vector<T, std::allocator<T>>>) {
-    return "std::vector<" + type_name<T>() + ">";
+typename std::enable_if<(std::rank<T>::value == 1), std::string>::type
+get_array_dim() {
+  return "[" + std::to_string(std::extent<T>::value) + "]";
 }
 
-template <typename T, typename U>
-std::string get_type_name(type_tag<std::pair<T, U>>) {
-    return "std::pair<" + type_name<T>() + ", " + type_name<U>() + ">";
+template <typename T>
+typename std::enable_if<(std::rank<T>::value > 1), std::string>::type
+get_array_dim() {
+  return "[" + std::to_string(std::extent<T>::value) + "]" +
+         get_array_dim<typename std::remove_extent<T>::type>();
+}
+
+template <typename T>
+typename std::enable_if<(std::rank<T>::value > 0), std::string>::type
+get_type_name(type_tag<T>) {
+  return type_name<typename std::remove_all_extents<T>::type>() + get_array_dim<T>();
+}
+
+template <typename T, size_t N>
+std::string get_type_name(type_tag<std::array<T, N>>) {
+#ifdef DBG_HIDE_DEBUG_TYPE_NAME
+  return "array<" + type_name<T>() + ", " + std::to_string(N) + ">";
+#endif
+  return "std::array<" + type_name<T>() + ", " + std::to_string(N) + ">";
+}
+
+template <typename T>
+std::string get_type_name(type_tag<std::vector<T, std::allocator<T>>>) {
+#ifdef DBG_HIDE_DEBUG_TYPE_NAME
+  return "vector<" + type_name<T>() + ">";
+#endif
+  return "std::vector<" + type_name<T>() + ">";
+}
+
+template <typename T1, typename T2>
+std::string get_type_name(type_tag<std::pair<T1, T2>>) {
+#ifdef DBG_HIDE_DEBUG_TYPE_NAME
+  return "pair<" + type_name<T1>() + ", " + type_name<T2>() + ">";
+#endif
+  return "std::pair<" + type_name<T1>() + ", " + type_name<T2>() + ">";
+}
+
+template <typename... T>
+std::string type_list_to_string() {
+  std::string result;
+  auto unused = {(result += type_name<T>() + ", ", 0)..., 0};
+  static_cast<void>(unused);
+
+#if DBG_MACRO_CXX_STANDARD >= 17
+  if constexpr (sizeof...(T) > 0) {
+    result.pop_back();
+    result.pop_back();
+  }
+#else
+  if (sizeof...(T) > 0) {
+    result.pop_back();
+    result.pop_back();
+  }
+#endif
+  return result;
 }
 
 template <typename... T>
 std::string get_type_name(type_tag<std::tuple<T...>>) {
-    std::string result;
-    auto unused = {(result += type_name<T>() + ", ", 0)..., 0};
-    static_cast<void>(unused);
-    if (sizeof...(T) > 0) {
-        result.pop_back();
-        result.pop_back();
-    }
-    return "std::tuple<" + result + ">";
+#ifdef DBG_HIDE_DEBUG_TYPE_NAME
+  return "tuple<" + type_list_to_string<T...>() + ">";
+#endif
+  return "std::tuple<" + type_list_to_string<T...>() + ">";
 }
+
+template <typename T>
+inline std::string get_type_name(type_tag<print_formatted<T>>) {
+  return type_name<T>();
+}
+
+// Implementation of 'is_detected' to specialize for container-like types
+
+namespace detail_detector {
+
+struct nonesuch {
+  nonesuch() = delete;
+  ~nonesuch() = delete;
+  nonesuch(nonesuch const&) = delete;
+  void operator=(nonesuch const&) = delete;
+};
+
+template <typename...>
+using void_t = void;
+
+template <class Default,
+          class AlwaysVoid,
+          template <class...>
+          class Op,
+          class... Args>
+struct detector {
+  using value_t = std::false_type;
+  using type = Default;
+};
+
+template <class Default, template <class...> class Op, class... Args>
+struct detector<Default, void_t<Op<Args...>>, Op, Args...> {
+  using value_t = std::true_type;
+  using type = Op<Args...>;
+};
+
+}  // namespace detail_detector
+
+template <template <class...> class Op, class... Args>
+using is_detected = typename detail_detector::
+    detector<detail_detector::nonesuch, void, Op, Args...>::value_t;
 
 namespace detail {
 
 namespace {
 using std::begin;
 using std::end;
+#if DBG_MACRO_CXX_STANDARD < 17
+template <typename T>
+constexpr auto size(const T& c) -> decltype(c.size()) {
+  return c.size();
+}
+template <typename T, std::size_t N>
+constexpr std::size_t size(const T (&)[N]) {
+  return N;
+}
+#else
 using std::size;
+#endif
 }  // namespace
 
-template <typename T, typename = void>
-struct is_iterable : std::false_type {};
+// Specializations for container adapters
+
+template <class T, class C>
+T pop(std::stack<T, C>& adapter) {
+  T value = std::move(adapter.top());
+  adapter.pop();
+  return value;
+}
+
+template <class T, class C>
+T pop(std::queue<T, C>& adapter) {
+  T value = std::move(adapter.front());
+  adapter.pop();
+  return value;
+}
+
+template <class T, class C, class Cmp>
+T pop(std::priority_queue<T, C, Cmp>& adapter) {
+  T value = std::move(adapter.top());
+  adapter.pop();
+  return value;
+}
 
 template <typename T>
-struct is_iterable<T, std::void_t<decltype(begin(std::declval<const T&>())),
-    decltype(end(std::declval<const T&>())),
-    decltype(size(std::declval<const T&>()))>>
-        : std::true_type {};
-
-template <typename T, typename = void>
-struct is_printable : std::false_type {};
+struct remove_cvref {
+  typedef typename std::remove_cv<typename std::remove_reference<T>::type>::type
+      type;
+};
 
 template <typename T>
-struct is_printable<T, typename std::enable_if_t<std::is_same_v<
-    decltype(std::cout << std::declval<const T&>()), std::ostream&>>>
-        : std::true_type {};
+using remove_cvref_t = typename remove_cvref<T>::type;
+
+template <typename T>
+using detect_begin_t = decltype(detail::begin(std::declval<T>()));
+
+template <typename T>
+using detect_end_t = decltype(detail::end(std::declval<T>()));
+
+template <typename T>
+using detect_size_t = decltype(detail::size(std::declval<T>()));
+
+template <typename T>
+struct is_container {
+  static constexpr bool value =
+      is_detected<detect_begin_t, T>::value &&
+      is_detected<detect_end_t, T>::value &&
+      is_detected<detect_size_t, T>::value &&
+      !std::is_same<std::string, remove_cvref_t<T>>::value;
+};
+
+template <typename T>
+using detect_underlying_container_t =
+    typename remove_cvref_t<T>::container_type;
+
+template <typename T>
+struct is_container_adapter {
+  static constexpr bool value =
+      is_detected<detect_underlying_container_t, T>::value;
+};
+
+template <typename T>
+using ostream_operator_t =
+    decltype(std::declval<std::ostream&>() << std::declval<T>());
+
+template <typename T>
+struct has_ostream_operator : is_detected<ostream_operator_t, T> {};
 
 }  // namespace detail
 
-// pretty_print forward declarations
+// Helper to dbg(…)-print types
+template <typename T>
+struct print_type {};
+
+template <typename T>
+print_type<T> type() {
+  return print_type<T>{};
+}
+
+// Forward declarations of "pretty_print"
 
 template <typename T>
 inline void pretty_print(std::ostream& stream, const T& value, std::true_type);
@@ -208,15 +514,32 @@ template <typename T>
 inline void pretty_print(std::ostream&, const T&, std::false_type);
 
 template <typename T>
-inline typename std::enable_if<!detail::is_iterable<T>::value, bool>::type
+inline typename std::enable_if<
+    !detail::is_container<const T&>::value &&
+        !detail::is_container_adapter<const T&>::value &&
+        !std::is_enum<T>::value,
+    bool>::type
 pretty_print(std::ostream& stream, const T& value);
 
-inline bool pretty_print(std::ostream& stream, const char* const& value);
+inline bool pretty_print(std::ostream& stream, const bool& value);
+
+inline bool pretty_print(std::ostream& stream, const char& value);
+
+template <typename P>
+inline bool pretty_print(std::ostream& stream, P* const& value);
+
+template <typename T, typename Deleter>
+inline bool pretty_print(std::ostream& stream,
+                         std::unique_ptr<T, Deleter>& value);
+
+template <typename T>
+inline bool pretty_print(std::ostream& stream, std::shared_ptr<T>& value);
 
 template <size_t N>
 inline bool pretty_print(std::ostream& stream, const char (&value)[N]);
 
-inline bool pretty_print(std::ostream& stream, const std::string& value);
+template <>
+inline bool pretty_print(std::ostream& stream, const char* const& value);
 
 template <typename... Ts>
 inline bool pretty_print(std::ostream& stream, const std::tuple<Ts...>& value);
@@ -224,303 +547,509 @@ inline bool pretty_print(std::ostream& stream, const std::tuple<Ts...>& value);
 template <>
 inline bool pretty_print(std::ostream& stream, const std::tuple<>&);
 
-template <typename T, typename U>
-inline bool pretty_print(std::ostream& stream, const std::pair<T, U>& value);
+template <>
+inline bool pretty_print(std::ostream& stream, const time&);
 
 template <typename T>
-inline bool pretty_print(std::ostream& stream, const std::stack<T>& value);
+inline bool pretty_print(std::ostream& stream, const print_formatted<T>& value);
 
 template <typename T>
-inline bool pretty_print(std::ostream& stream, const std::queue<T>& value);
+inline bool pretty_print(std::ostream& stream, const print_type<T>&);
+
+template <typename Enum>
+inline typename std::enable_if<std::is_enum<Enum>::value, bool>::type
+pretty_print(std::ostream& stream, Enum const& value);
+
+inline bool pretty_print(std::ostream& stream, const std::string& value);
+
+#if DBG_MACRO_CXX_STANDARD >= 17
+
+inline bool pretty_print(std::ostream& stream, const std::string_view& value);
+
+#endif
+
+template <typename T1, typename T2>
+inline bool pretty_print(std::ostream& stream, const std::pair<T1, T2>& value);
+
+#if DBG_MACRO_CXX_STANDARD >= 17
 
 template <typename T>
-inline bool pretty_print(std::ostream& stream, const std::deque<T>& value);
+inline bool pretty_print(std::ostream& stream, const std::optional<T>& value);
 
-template <typename T>
+template <typename... Ts>
 inline bool pretty_print(std::ostream& stream,
-        const std::priority_queue<T>& value);
+                         const std::variant<Ts...>& value);
 
-template <typename T>
-inline typename std::enable_if<detail::is_iterable<T>::value, bool>::type
-pretty_print(std::ostream& stream, const T& value);
+#endif
 
-// pretty_print definitions
+template <typename Container>
+inline typename std::enable_if<detail::is_container<const Container&>::value,
+                               bool>::type
+pretty_print(std::ostream& stream, const Container& value);
+
+template <typename ContainerAdapter>
+inline typename std::enable_if<
+    detail::is_container_adapter<const ContainerAdapter&>::value,
+    bool>::type
+pretty_print(std::ostream& stream, ContainerAdapter value);
+
+// Specializations of "pretty_print"
 
 template <typename T>
 inline void pretty_print(std::ostream& stream, const T& value, std::true_type) {
-    stream << value;
+  stream << value;
 }
 
 template <typename T>
 inline void pretty_print(std::ostream&, const T&, std::false_type) {
-    static_assert(detail::is_printable<T>::value,
-        "Type does not support the << ostream operator");
+  static_assert(detail::has_ostream_operator<const T&>::value,
+                "Type does not support the << ostream operator");
 }
 
 template <typename T>
-inline typename std::enable_if<!detail::is_iterable<T>::value, bool>::type
+inline typename std::enable_if<
+    !detail::is_container<const T&>::value &&
+        !detail::is_container_adapter<const T&>::value &&
+        !std::is_enum<T>::value,
+    bool>::type
 pretty_print(std::ostream& stream, const T& value) {
-    pretty_print(stream, value, typename detail::is_printable<T>::type {});
-    return true;
+  pretty_print(stream, value,
+               typename detail::has_ostream_operator<const T&>::type{});
+  return true;
 }
 
-inline bool pretty_print(std::ostream& stream, const char* const& value) {
-    stream << '"' << value << '"';
-    return true;
+inline bool pretty_print(std::ostream& stream, const bool& value) {
+  stream << std::boolalpha << value;
+  return true;
+}
+
+inline bool pretty_print(std::ostream& stream, const char& value) {
+  const bool printable = value >= 0x20 && value <= 0x7E;
+
+  if (printable) {
+    stream << "'" << value << "'";
+  } else {
+    stream << "'\\x" << std::setw(2) << std::setfill('0') << std::hex
+           << std::uppercase << (0xFF & value) << "'";
+  }
+  return true;
+}
+
+template <typename P>
+inline bool pretty_print(std::ostream& stream, P* const& value) {
+  if (value == nullptr) {
+    stream << "nullptr";
+  } else {
+    stream << value;
+  }
+  return true;
+}
+
+template <typename T, typename Deleter>
+inline bool pretty_print(std::ostream& stream,
+                         std::unique_ptr<T, Deleter>& value) {
+  pretty_print(stream, value.get());
+  return true;
+}
+
+template <typename T>
+inline bool pretty_print(std::ostream& stream, std::shared_ptr<T>& value) {
+  pretty_print(stream, value.get());
+  stream << " (use_count = " << value.use_count() << ")";
+
+  return true;
 }
 
 template <size_t N>
 inline bool pretty_print(std::ostream& stream, const char (&value)[N]) {
-    stream << value;
-    return false;
+  stream << value;
+  return false;
 }
 
-inline bool pretty_print(std::ostream& stream, const std::string& value) {
-    stream << '"' << value << '"';
-    return true;
+template <>
+inline bool pretty_print(std::ostream& stream, const char* const& value) {
+  stream << '"' << value << '"';
+  return true;
 }
 
-template <size_t I>
+template <size_t Idx>
 struct pretty_print_tuple {
-    template <typename... T>
-    static void print(std::ostream& stream, const std::tuple<T...>& tuple) {
-        pretty_print_tuple<I - 1>::print(stream, tuple);
-        stream << ", ";
-        pretty_print(stream, std::get<I>(tuple));
-    }
+  template <typename... Ts>
+  static void print(std::ostream& stream, const std::tuple<Ts...>& tuple) {
+    pretty_print_tuple<Idx - 1>::print(stream, tuple);
+    stream << ", ";
+    pretty_print(stream, std::get<Idx>(tuple));
+  }
 };
 
 template <>
 struct pretty_print_tuple<0> {
-    template <typename... T>
-    static void print(std::ostream& stream, const std::tuple<T...>& tuple) {
-        pretty_print(stream, std::get<0>(tuple));
-    }
+  template <typename... Ts>
+  static void print(std::ostream& stream, const std::tuple<Ts...>& tuple) {
+    pretty_print(stream, std::get<0>(tuple));
+  }
 };
 
-template <typename... T>
-inline bool pretty_print(std::ostream& stream, const std::tuple<T...>& value) {
-    stream << "{";
-    pretty_print_tuple<sizeof...(T) - 1>::print(stream, value);
-    stream << "}";
-    return true;
+template <typename... Ts>
+inline bool pretty_print(std::ostream& stream, const std::tuple<Ts...>& value) {
+  stream << "{";
+  pretty_print_tuple<sizeof...(Ts) - 1>::print(stream, value);
+  stream << "}";
+
+  return true;
 }
 
 template <>
 inline bool pretty_print(std::ostream& stream, const std::tuple<>&) {
-    stream << "{}";
-    return true;
+  stream << "{}";
+
+  return true;
 }
 
-template <typename T, typename U>
-inline bool pretty_print(std::ostream& stream, const std::pair<T, U>& value) {
-    stream << "{";
-    pretty_print(stream, value.first);
-    stream << ", ";
-    pretty_print(stream, value.second);
-    stream << "}";
-    return true;
+template <>
+inline bool pretty_print(std::ostream& stream, const time&) {
+  using namespace std::chrono;
+
+  const auto now = system_clock::now();
+  const auto us =
+      duration_cast<microseconds>(now.time_since_epoch()).count() % 1000000;
+  const auto hms = system_clock::to_time_t(now);
+#if _MSC_VER >= 1600
+  struct tm t;
+  localtime_s(&t, &hms);
+  const std::tm* tm = &t;
+#else
+  const std::tm* tm = std::localtime(&hms);
+#endif
+  stream << "current time = " << std::put_time(tm, "%H:%M:%S") << '.'
+         << std::setw(6) << std::setfill('0') << us;
+  return false;
 }
 
+// Converts decimal integer to binary string
 template <typename T>
-inline void pretty_print_stack(std::ostream& stream, T stack) {
-    std::vector<typename T::value_type> vec;
-    while (!stack.empty()) {
-        vec.push_back(stack.top());
-        stack.pop();
-    }
-    std::reverse(vec.begin(), vec.end());
-    pretty_print(stream, vec);
-}
+std::string decimalToBinary(T n) {
+  const size_t length = 8 * sizeof(T);
+  std::string toRet;
+  toRet.resize(length);
 
-template <typename T>
-inline bool pretty_print(std::ostream& stream, const std::stack<T>& value) {
-    pretty_print_stack(stream, value);
-    return true;
+  for (size_t i = 0; i < length; ++i) {
+    const auto bit_at_index_i = static_cast<char>((n >> i) & 1);
+    toRet[length - 1 - i] = bit_at_index_i + '0';
+  }
+
+  return toRet;
 }
 
 template <typename T>
 inline bool pretty_print(std::ostream& stream,
-        const std::priority_queue<T>& value) {
-    pretty_print_stack(stream, value);
-    return true;
-}
+                         const print_formatted<T>& value) {
+  if (value.inner < 0) {
+    stream << "-";
+  }
+  stream << value.prefix();
 
-template <typename T>
-inline void pretty_print_queue(std::ostream& stream, T queue) {
-    std::vector<typename T::value_type> vec;
-    while (!queue.empty()) {
-        vec.push_back(queue.front());
-        queue.pop();
+  // Print using setbase
+  if (value.base != 2) {
+    stream << std::setw(sizeof(T)) << std::setfill('0')
+           << std::setbase(value.base) << std::uppercase;
+
+    if (value.inner >= 0) {
+      // The '+' sign makes sure that a uint_8 is printed as a number
+      stream << +value.inner;
+    } else {
+      using unsigned_type = typename std::make_unsigned<T>::type;
+      stream << +(static_cast<unsigned_type>(-(value.inner + 1)) + 1);
     }
-    pretty_print(stream, vec);
-}
-
-template <typename T>
-inline bool pretty_print(std::ostream& stream, const std::queue<T>& value) {
-    pretty_print_queue(stream, value);
-    return true;
-}
-
-template <typename T>
-inline void pretty_print_deque(std::ostream& stream, T queue) {
-    std::vector<typename T::value_type> vec;
-    while (!queue.empty()) {
-        vec.push_back(queue.back());
-        queue.pop_back();
+  } else {
+    // Print for binary
+    if (value.inner >= 0) {
+      stream << decimalToBinary(value.inner);
+    } else {
+      using unsigned_type = typename std::make_unsigned<T>::type;
+      stream << decimalToBinary<unsigned_type>(
+          static_cast<unsigned_type>(-(value.inner + 1)) + 1);
     }
-    reverse(vec.begin(), vec.end());
-    pretty_print(stream, vec);
+  }
+
+  return true;
 }
 
 template <typename T>
-inline bool pretty_print(std::ostream& stream, const std::deque<T>& value) {
-    pretty_print_deque(stream, value);
-    return true;
+inline bool pretty_print(std::ostream& stream, const print_type<T>&) {
+  stream << type_name<T>();
+
+  stream << " [sizeof: " << sizeof(T) << " byte, ";
+
+  stream << "trivial: ";
+  if (std::is_trivial<T>::value) {
+    stream << "yes";
+  } else {
+    stream << "no";
+  }
+
+  stream << ", standard layout: ";
+  if (std::is_standard_layout<T>::value) {
+    stream << "yes";
+  } else {
+    stream << "no";
+  }
+  stream << "]";
+
+  return false;
 }
 
+template <typename Enum>
+inline typename std::enable_if<std::is_enum<Enum>::value, bool>::type
+pretty_print(std::ostream& stream, Enum const& value) {
+  using UnderlyingType = typename std::underlying_type<Enum>::type;
+  stream << static_cast<UnderlyingType>(value);
+
+  return true;
+}
+
+inline bool pretty_print(std::ostream& stream, const std::string& value) {
+  stream << '"' << value << '"';
+  return true;
+}
+
+#if DBG_MACRO_CXX_STANDARD >= 17
+
+inline bool pretty_print(std::ostream& stream, const std::string_view& value) {
+  stream << '"' << std::string(value) << '"';
+  return true;
+}
+
+#endif
+
+template <typename T1, typename T2>
+inline bool pretty_print(std::ostream& stream, const std::pair<T1, T2>& value) {
+  stream << "{";
+  pretty_print(stream, value.first);
+  stream << ", ";
+  pretty_print(stream, value.second);
+  stream << "}";
+  return true;
+}
+
+#if DBG_MACRO_CXX_STANDARD >= 17
+
 template <typename T>
-inline typename std::enable_if<detail::is_iterable<T>::value, bool>::type
-pretty_print(std::ostream& stream, const T& value) {
-    using std::begin;
-    using std::end;
-    using std::size;
+inline bool pretty_print(std::ostream& stream, const std::optional<T>& value) {
+  if (value) {
+    stream << '{';
+    pretty_print(stream, *value);
+    stream << '}';
+  } else {
+    stream << "nullopt";
+  }
 
-    const size_t sz = size(value);
-    const size_t n = std::min((size_t) DBG_ITERABLE_LENGTH, sz);
-    size_t i = 0;
+  return true;
+}
 
-    stream << "{";
-    for (auto it = begin(value); i < n; ++it, ++i) {
-        pretty_print(stream, *it);
-        if (i != n - 1) {
-            stream << ", ";
-        }
+template <typename... Ts>
+inline bool pretty_print(std::ostream& stream,
+                         const std::variant<Ts...>& value) {
+  stream << "{";
+  std::visit([&stream](auto&& arg) { pretty_print(stream, arg); }, value);
+  stream << "}";
+
+  return true;
+}
+
+#endif
+
+template <typename Container>
+inline typename std::enable_if<detail::is_container<const Container&>::value,
+                               bool>::type
+pretty_print(std::ostream& stream, const Container& value) {
+  stream << "{";
+  const size_t size = detail::size(value);
+  const size_t n = std::min((size_t) DBG_ITERABLE_LENGTH, size);
+  size_t i = 0;
+  using std::begin;
+  using std::end;
+  for (auto it = begin(value); it != end(value) && i < n; ++it, ++i) {
+    pretty_print(stream, *it);
+    if (i != n - 1) {
+      stream << ", ";
     }
-    if (sz > n) {
-        stream << ", ... " << "(size: " << sz << ")";
+  }
+
+  if (size > n) {
+    stream << ", ...";
+    stream << " size:" << size;
+  }
+
+  stream << "}";
+  return true;
+}
+
+template <typename ContainerAdapter>
+inline typename std::enable_if<
+    detail::is_container_adapter<const ContainerAdapter&>::value,
+    bool>::type
+pretty_print(std::ostream& stream, ContainerAdapter value) {
+  stream << "{";
+  const size_t size = detail::size(value);
+  const size_t n = std::min(size_t{10}, size);
+
+  std::vector<typename ContainerAdapter::value_type> elements;
+  elements.reserve(n);
+  for (size_t i = 0; i < n; ++i) {
+    elements.push_back(detail::pop(value));
+  }
+  std::reverse(elements.begin(), elements.end());
+
+  if (size > n) {
+    stream << "..., ";
+  }
+  for (size_t i = 0; i < n; ++i) {
+    pretty_print(stream, elements[i]);
+    if (i != n - 1) {
+      stream << ", ";
     }
-    stream << "}";
-    return true;
+  }
+  if (size > n) {
+    stream << " (size:" << size << ")";
+  }
+
+  stream << "}";
+  return true;
 }
 
 template <typename T, typename... U>
 struct last {
-    using type = typename last<U...>::type;
+  using type = typename last<U...>::type;
 };
 
 template <typename T>
 struct last<T> {
-    using type = T;
+  using type = T;
 };
 
 template <typename... T>
 using last_t = typename last<T...>::type;
 
 class DebugOutput {
-  public:
-    using expr_t = const char*;
+ public:
+  // Helper alias to avoid obscure type `const char* const*` in signature.
+  using expr_t = const char*;
 
-    DebugOutput(const char* filepath, int line, const char* function_name,
-            bool _newline = true) : newline(_newline) {
-        std::string path = filepath;
-        std::string funcname = function_name;
-    
-        std::stringstream ss;
-        ss << ansi(ANSI_DEBUG) << "[";
-
+  DebugOutput(const char* filepath, int line, const char* function_name,
+              bool extra_newline = true)
+      : m_use_colorized_output(isColorizedOutputEnabled()),
+        add_extra_newline(extra_newline) {
+    std::string path = filepath;
+    const std::size_t path_length = path.length();
+    if (path_length > DBG_MAX_PATH_LENGTH) {
+      path = ".." + path.substr(path_length - DBG_MAX_PATH_LENGTH,
+        DBG_MAX_PATH_LENGTH);
+    }
+    std::stringstream ss;
+    ss << ansi(ANSI_DEBUG) << "[";
 #ifndef DBG_NO_SHOW_PATH
-        const std::size_t path_length = path.length();
-        if (path_length > DBG_MAX_PATH_LENGTH) {
-            path = ".." + path.substr(path_length - DBG_MAX_PATH_LENGTH,
-                    DBG_MAX_PATH_LENGTH);
-        }
-        ss << path << ":";
-        ss << line << " ("
-            << function_name << ")] " << ansi(ANSI_RESET);
+    ss << path << ":";
 #endif
-
-        ss << line;
-
+    ss << line;
 #ifndef DBG_NO_SHOW_FUNCTION_NAME
-        ss << " (" << funcname << ")";
-#endif
-
-        ss << "] " << ansi(ANSI_RESET);
-
-        location = ss.str();
-    }
-
-    template <typename... T>
-    auto print(std::initializer_list<expr_t> exprs,
-            std::initializer_list<std::string> types,
-            T&&... values) -> last_t<T...> {
-        if (exprs.size() != sizeof...(values)) {
-            std::cerr << location << ansi(ANSI_WARN) <<
-                "The number of arguments mismatch, " <<
-                "please check unprotected comma" <<
-                ansi(ANSI_RESET) << std::endl;
-        }
-        auto&& ret = print_impl(exprs.begin(), types.begin(),
-            std::forward<T>(values)...);
-        if (newline)
-            std::cerr << std::endl;
-        return ret;
-    }
-
-  protected:
-    template <typename T>
-    T&& print_impl(const expr_t* expr, const std::string* type, T&& value) {
-        const T& ref = value;
-        std::stringstream stream_value;
-        const bool print_expr_and_type = pretty_print(stream_value, ref);
-
-        std::stringstream output;
-        output << location;
-        if (print_expr_and_type) {
-            output << ansi(ANSI_EXPRESSION) <<
-                *expr << ansi(ANSI_RESET) << " = ";
-        }
-        output << ansi(ANSI_VALUE) << stream_value.str() << ansi(ANSI_RESET);
-        if (print_expr_and_type) {
-            output << " (" << ansi(ANSI_TYPE) <<
-                *type << ansi(ANSI_RESET) << ")";
-        }
-        output << std::endl;
-        std::cerr << output.str();
-
-        return std::forward<T>(value);
-    }
-
-    template <typename T, typename... U>
-    auto print_impl(const expr_t* exprs, const std::string* types, T&& value,
-            U&&... rest) -> last_t<T, U...> {
-        print_impl(exprs, types, std::forward<T>(value));
-        return print_impl(exprs + 1, types + 1, std::forward<U>(rest)...);
-    }
-
-    const char* ansi(const char* code) const {
-#ifdef DBG_NO_COLORIZED_OUTPUT
-    return ANSI_EMPTY;
+    ss << " (" << function_name << ")";
 #else
-    return code;
+    static_cast<void>(function_name);
 #endif
+    ss << "] " << ansi(ANSI_RESET);
+    m_location = ss.str();
+  }
+
+  template <typename... T>
+  auto print(std::initializer_list<expr_t> exprs,
+             std::initializer_list<std::string> types,
+             T&&... values) -> last_t<T...> {
+    if (exprs.size() != sizeof...(values)) {
+      std::cerr
+          << m_location << ansi(ANSI_WARN)
+          << "The number of arguments mismatch, please check unprotected comma"
+          << ansi(ANSI_RESET) << std::endl;
     }
+    auto&& ret = print_impl(exprs.begin(), types.begin(),
+                            std::forward<T>(values)...);
+    if (add_extra_newline) std::cerr << std::endl;
+    return ret;
+  }
 
-    std::string location;
-    bool newline;
+ private:
+  template <typename T>
+  T&& print_impl(const expr_t* expr, const std::string* type, T&& value) {
+    const T& ref = value;
+    std::stringstream stream_value;
+    const bool print_expr_and_type = pretty_print(stream_value, ref);
 
-    static constexpr const char* const ANSI_EMPTY = "";
-    static constexpr const char* const ANSI_DEBUG = "\x1b[02m";
-    static constexpr const char* const ANSI_WARN = "\x1b[33m";
-    static constexpr const char* const ANSI_EXPRESSION = "\x1b[36m";
-    static constexpr const char* const ANSI_VALUE = "\x1b[01m";
-    static constexpr const char* const ANSI_TYPE = "\x1b[32m";
-    static constexpr const char* const ANSI_RESET = "\x1b[0m";
+    std::stringstream output;
+    output << m_location;
+    if (print_expr_and_type) {
+      output << ansi(ANSI_EXPRESSION) << *expr << ansi(ANSI_RESET) << " = ";
+    }
+    output << ansi(ANSI_VALUE) << stream_value.str() << ansi(ANSI_RESET);
+    if (print_expr_and_type) {
+      output << " (" << ansi(ANSI_TYPE) << *type << ansi(ANSI_RESET) << ")";
+    }
+    output << std::endl;
+    std::cerr << output.str();
+
+    return std::forward<T>(value);
+  }
+
+  template <typename T, typename... U>
+  auto print_impl(const expr_t* exprs,
+                  const std::string* types,
+                  T&& value,
+                  U&&... rest) -> last_t<T, U...> {
+    print_impl(exprs, types, std::forward<T>(value));
+    return print_impl(exprs + 1, types + 1, std::forward<U>(rest)...);
+  }
+
+  const char* ansi(const char* code) const {
+    if (m_use_colorized_output) {
+      return code;
+    } else {
+      return ANSI_EMPTY;
+    }
+  }
+
+  const bool m_use_colorized_output;
+  const bool add_extra_newline;
+
+  std::string m_location;
+
+  static constexpr const char* const ANSI_EMPTY = "";
+  static constexpr const char* const ANSI_DEBUG = "\x1b[02m";
+  static constexpr const char* const ANSI_WARN = "\x1b[33m";
+  static constexpr const char* const ANSI_EXPRESSION = "\x1b[36m";
+  static constexpr const char* const ANSI_VALUE = "\x1b[01m";
+  static constexpr const char* const ANSI_TYPE = "\x1b[32m";
+  static constexpr const char* const ANSI_RESET = "\x1b[0m";
 };
+
+// Identity function to suppress "-Wunused-value" warnings in DBG_MACRO_DISABLE
+// mode
+
+template <typename T>
+T&& identity(T&& t) {
+  return std::forward<T>(t);
+}
+
+template <typename T, typename... U>
+auto identity(T&&, U&&... u) -> last_t<U...> {
+  return identity(std::forward<U>(u)...);
+}
 
 }  // namespace dbg
 
+#ifndef DBG_MACRO_DISABLE
+
+// Force expanding argument with commas for MSVC, ref:
+// https://stackoverflow.com/questions/35210637/macro-expansion-argument-with-commas
+// Note that "args" should be a tuple with parentheses, such as "(e1, e2, ...)".
 #define DBG_IDENTITY(x) x
 #define DBG_CALL(fn, args) DBG_IDENTITY(fn args)
 
@@ -528,8 +1057,8 @@ class DebugOutput {
 #define DBG_CAT(_1, _2) DBG_CAT_IMPL(_1, _2)
 
 #define DBG_16TH_IMPL(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, \
-                      _14, _15, _16, ...) _16
-
+                      _14, _15, _16, ...)                                     \
+  _16
 #define DBG_16TH(args) DBG_CALL(DBG_16TH_IMPL, args)
 #define DBG_NARG(...) \
   DBG_16TH((__VA_ARGS__, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
@@ -571,12 +1100,17 @@ class DebugOutput {
 
 #define DBG_TYPE_NAME(x) dbg::type_name<decltype(x)>()
 
-#define dbg(...)                                    \
-  dbg::DebugOutput(__FILE__, __LINE__, __func__)    \
-      .print({DBG_MAP(DBG_STRINGIFY, __VA_ARGS__)}, \
+#define dbg(...)                                       \
+  dbg::DebugOutput(__FILE__, __LINE__, __func__, true) \
+      .print({DBG_MAP(DBG_STRINGIFY, __VA_ARGS__)},    \
              {DBG_MAP(DBG_TYPE_NAME, __VA_ARGS__)}, __VA_ARGS__)
+#define dbgn(...)                                       \
+  dbg::DebugOutput(__FILE__, __LINE__, __func__, false) \
+      .print({DBG_MAP(DBG_STRINGIFY, __VA_ARGS__)},     \
+             {DBG_MAP(DBG_TYPE_NAME, __VA_ARGS__)}, __VA_ARGS__)
+#else
+#define dbg(...) dbg::identity(__VA_ARGS__)
+#define dbgn(...) dbg::identity(__VA_ARGS__)
+#endif  // DBG_MACRO_DISABLE
 
-#define dbgn(...)                                           \
-  dbg::DebugOutput(__FILE__, __LINE__, __func__, false)     \
-      .print({DBG_MAP(DBG_STRINGIFY, __VA_ARGS__)},         \
-             {DBG_MAP(DBG_TYPE_NAME, __VA_ARGS__)}, __VA_ARGS__)
+#endif  // DBG_MACRO_DBG_H
