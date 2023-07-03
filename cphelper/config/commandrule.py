@@ -18,7 +18,7 @@ COMMAND_RULE_LIST = [
             "-xc++-header",
 
             # Version
-            "-std=c++17",
+            "-std=c++20",
 
             # Define Local
             "-DLOCAL",
@@ -44,7 +44,7 @@ COMMAND_RULE_LIST = [
             "-xc++-header",
 
             # Version
-            "-std=c++17",
+            "-std=c++20",
 
             # Basic Warnings
             "-O2", "-Wall", "-Wextra",
@@ -87,7 +87,7 @@ COMMAND_RULE_LIST = [
             "-xc++",
 
             # Version
-            "-std=c++17",
+            "-std=c++20",
 
             # Include
             "-I${LIBRARY_DIR}/header",
@@ -118,7 +118,7 @@ COMMAND_RULE_LIST = [
             "-xc++",
 
             # Version
-            "-std=c++17",
+            "-std=c++20",
 
             # Basic Warnings
             "-O2", "-Wall", "-Wextra",
