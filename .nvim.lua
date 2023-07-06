@@ -1,9 +1,9 @@
 -- See: https://github.com/mQfZ/dotfiles/tree/master/nvim for more info about
 -- configuration.
-local current_directory = '~/proj/cp'
+local file_directory = vim.fn.expand('~/proj/cp')
 
 require('luasnip.loaders.from_vscode').load_standalone({
-    path = current_directory .. '/.vscode/cp.code-snippets'
+    path = file_directory .. '/.vscode/cp.code-snippets'
 })
 
 local Terminal = require('toggleterm.terminal').Terminal
@@ -19,22 +19,34 @@ local function current_file()
 end
 
 local function create_terminal(command)
-    local terminal = Terminal:new({
-        cmd = command,
-        close_on_exit = false,
-        clear_env = false,
-        auto_scroll = true,
-        on_open = function(term)
-            vim.schedule(function()
-                vim.cmd('startinsert!')
-            end)
-        end
-    })
-    terminal:toggle()
+    if vim.env.TMUX then
+        local job = vim.fn.jobstart(
+            'tmux split-window -hf "' .. command .. ';'
+         .. 'echo -e \'\nPress [ENTER] to terminate program.\';'
+         .. 'read"', {
+            cwd = file_directory
+        })
+    else
+        error('tmux is not running')
+    end
+    --  vim.api.nvim_command('tmux split-window "' .. command .. '"')
+    -- local terminal = Terminal:new({
+    --     cmd = command,
+    --     close_on_exit = false,
+    --     clear_env = false,
+    --     auto_scroll = true,
+    --     on_open = function(term)
+    --         vim.schedule(function()
+    --             vim.cmd('startinsert!')
+    --         end)
+    --     end
+    -- })
+    -- terminal:toggle()
 end
 
 
-vim.env.PYTHONPATH = vim.fn.expand(current_directory())
+vim.env.PYTHONPATH = (vim.env.PYTHONPATH and vim.env.PYTHONPATH .. ':' or '')
+                  .. vim.fn.expand(current_directory())
 
 vim.filetype.add({
     extension = {
@@ -207,7 +219,7 @@ run_tasks = {
         inputs = {  },
         mapping = '<leader>rn',
         command = function(input)
-            cmd = script  .. ' run '
+            cmd = script  .. ' run'
                .. ' -mf ' .. current_file()
             create_terminal(cmd)
         end
@@ -362,8 +374,8 @@ generate_tasks = {
         description = 'Generate files.',
         inputs = { 'template', 'new_file' },
         command = function(input)
-            cmd = script .. ' genfile '
-               ..           input.new_file
+            cmd = script .. ' genfile'
+               .. ' '    .. input.new_file
                .. ' -b ' .. current_directory()
                .. ' -t ' .. input.template
             create_terminal(cmd)
@@ -375,8 +387,8 @@ generate_tasks = {
         mapping = '<leader>gf',
         inputs = { 'template', 'new_file' },
         command = function(input)
-            cmd = script .. ' genfile '
-               ..           input.new_file
+            cmd = script .. ' genfile'
+               .. ' '    .. input.new_file
                .. ' -b ' .. current_directory()
                .. ' -t ' .. input.template
                .. ' -n ' .. vim.v.servername
@@ -388,8 +400,8 @@ generate_tasks = {
         description = 'Generate files with rule.',
         inputs = { 'new_files_rule', 'template', 'new_file' },
         command = function(input)
-            cmd = script .. ' genfile '
-               ..           input.new_file
+            cmd = script .. ' genfile'
+               .. ' '    .. input.new_file
                .. ' -b ' .. current_directory()
                .. ' -r ' .. input.new_files_rule
                .. ' -t ' .. input.template
@@ -401,8 +413,8 @@ generate_tasks = {
         description = 'Generate files with rule and open in Neovim.',
         inputs = { 'new_files_rule', 'template', 'new_file' },
         command = function(input)
-            cmd = script .. ' genfile '
-               ..           input.new_file
+            cmd = script .. ' genfile'
+               .. ' '    .. input.new_file
                .. ' -b ' .. current_directory()
                .. ' -r ' .. input.new_files_rule
                .. ' -t ' .. input.template
@@ -415,8 +427,8 @@ generate_tasks = {
         description = 'Generate input files.',
         inputs = { 'io_path' },
         command = function(input)
-            cmd = script .. ' geninput '
-               ..           input.io_path
+            cmd = script .. ' geninput'
+               .. ' '    .. input.io_path
                .. ' -b ' .. current_directory()
             create_terminal(cmd)
         end
@@ -427,8 +439,8 @@ generate_tasks = {
         mapping = '<leader>gi',
         inputs = { 'io_path' },
         command = function(input)
-            cmd = script .. ' geninput '
-               ..           input.io_path
+            cmd = script .. ' geninput'
+               .. ' '    .. input.io_path
                .. ' -b ' .. current_directory()
                .. ' -n ' .. vim.v.servername
             create_terminal(cmd)
@@ -440,8 +452,8 @@ generate_tasks = {
         inputs = { 'contest_path', 'new_files_rule', 'template', 
                    'task_paths' },
         command = function(input)
-            cmd = script .. ' gencontest '
-               ..           input.task_paths
+            cmd = script .. ' gencontest'
+               .. ' '    .. input.task_paths
                .. ' -b ' .. input.contest_path
                .. ' -r ' .. input.new_files_rule
                .. ' -t ' .. input.template
@@ -455,8 +467,8 @@ generate_tasks = {
         inputs = { 'contest_path', 'new_files_rule', 'template', 
                    'task_paths' },
         command = function(input)
-            cmd = script .. ' gencontest '
-               ..           input.task_paths
+            cmd = script .. ' gencontest'
+               .. ' '    .. input.task_paths
                .. ' -b ' .. input.contest_path
                .. ' -r ' .. input.new_files_rule
                .. ' -t ' .. input.template
@@ -470,7 +482,7 @@ generate_tasks = {
         mapping = '<leader>gs',
         inputs = {  },
         command = function(input)
-            cmd = script .. ' gensnippets '
+            cmd = script .. ' gensnippets'
             create_terminal(cmd)
         end
     },
@@ -480,7 +492,7 @@ generate_tasks = {
         mapping = '<leader>gr',
         inputs = { 'io_path' },
         command = function(input)
-            cmd = script .. ' removecomments '
+            cmd = script  .. ' removecomments'
                .. ' -mf ' .. current_file()
             create_terminal(cmd)
         end
@@ -490,7 +502,7 @@ generate_tasks = {
         description = 'Remove comments with a rule.',
         inputs = { 'main_file_rule' },
         command = function(input)
-            cmd = script .. ' removecomments '
+            cmd = script  .. ' removecomments'
                .. ' -mf ' .. current_file()
                .. ' -mr ' .. input.main_file_rule
             create_terminal(cmd)
