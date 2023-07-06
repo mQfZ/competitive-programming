@@ -6,8 +6,6 @@ require('luasnip.loaders.from_vscode').load_standalone({
     path = file_directory .. '/.vscode/cp.code-snippets'
 })
 
-local Terminal = require('toggleterm.terminal').Terminal
-
 local telescope_tasks = require('config.ext.telescope-tasks')
 
 local function current_directory()
