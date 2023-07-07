@@ -6,7 +6,7 @@ require('luasnip.loaders.from_vscode').load_standalone({
     path = file_directory .. '/.vscode/cp.code-snippets'
 })
 
-local telescope_tasks = require('config.ext.telescope-tasks')
+local telescope_tasks = require('ext.telescope-tasks')
 
 local function current_directory()
     return vim.fn.expand('%:p:h')
