@@ -38,12 +38,12 @@ License (MIT):
 
 // First X items to show in an interable.
 #ifndef DBG_ITERABLE_LENGTH
-#define DBG_ITERABLE_LENGTH 20
+#define DBG_ITERABLE_LENGTH 10
 #endif
 
 // Max length of the path of the file.
 #ifndef DBG_MAX_PATH_LENGTH
-#define DBG_MAX_PATH_LENGTH 20
+#define DBG_MAX_PATH_LENGTH 10
 #endif
 
 // Shorten debug types.
@@ -878,7 +878,7 @@ pretty_print(std::ostream& stream, const Container& value) {
 
   if (size > n) {
     stream << ", ...";
-    stream << " size:" << size;
+    stream << " (size: " << size << ")";
   }
 
   stream << "}";
@@ -892,7 +892,7 @@ inline typename std::enable_if<
 pretty_print(std::ostream& stream, ContainerAdapter value) {
   stream << "{";
   const size_t size = detail::size(value);
-  const size_t n = std::min(size_t{10}, size);
+  const size_t n = std::min((size_t) DBG_ITERABLE_LENGTH, size);
 
   std::vector<typename ContainerAdapter::value_type> elements;
   elements.reserve(n);
@@ -911,7 +911,7 @@ pretty_print(std::ostream& stream, ContainerAdapter value) {
     }
   }
   if (size > n) {
-    stream << " (size:" << size << ")";
+    stream << " (size: " << size << ")";
   }
 
   stream << "}";
