@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
+#pragma once
 
 /**
  * Bitset w/ finding next/previous bits
