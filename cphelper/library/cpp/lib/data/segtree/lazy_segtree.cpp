@@ -12,7 +12,7 @@ using namespace std;
  *     Build: O(n)
  *     Update: O(log n)
  *     Query: O(log n)
- * Verification: TODO
+ * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/cses/1735/main.cpp
  */
 
 struct segtree {
