@@ -48,7 +48,7 @@ struct segtree {
         if (ll <= m) update(x + 1, l, m, ll, rr, v...);
         if (rr > m) update(y, m + 1, r, ll, rr, v...);
         pull(x, y);
-    };
+    }
 
     node query(int x, int l, int r, int ll, int rr) {
         if (ll <= l && r <= rr) return tree[x];
@@ -57,7 +57,7 @@ struct segtree {
         push(x, l, r);
         node res = {};
         if (rr <= m) res = query(x + 1, l, m, ll, rr);
-        else if (ll < m) res = query(y, m + 1, r, ll, rr);
+        else if (ll > m) res = query(y, m + 1, r, ll, rr);
         else res = unite(query(x + 1, l, m, ll, rr), query(y, m + 1, r, ll, rr));
         pull(x, y);
         return res;
@@ -91,12 +91,12 @@ struct segtree {
 
     struct node {
         // make sure to set default value
-        int val = 0;
-        int add = 0;
+        long long val = 0;
+        long long add = 0;
 
         // apply value to range [l, r] when updating
-        void apply(int l, int r, int v) {
-            val += (r - l + 1) * v;
+        void apply(int l, int r, long long v) {
+            val += (long long) (r - l + 1) * add;
             add += v;
         }
     };
