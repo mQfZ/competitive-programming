@@ -12,12 +12,12 @@ using namespace std;
  * Verification: https://judge.yosupo.jp/submission/141445
  */
 
-struct SegTree {
+struct segtree {
     int n;
     struct node;
     vector<node> tree;
 
-    SegTree(int _n) : n(_n) {
+    segtree(int _n) : n(_n) {
         tree.resize(2 * n);
     }
 
@@ -27,7 +27,7 @@ struct SegTree {
 
     // update a[i]
     template <typename... Ts>
-    void update(int i, Ts... val) {
+    void update(int i, const Ts&... val) {
         tree[i += n].apply(val...);
         for (i /= 2; i > 0; i /= 2) pull(i);
     }
@@ -52,7 +52,8 @@ struct SegTree {
         }
     };
     
-    node unite(node a, node b) {
+    // unite two nodes into one
+    node unite(const node& a, const node& b) {
         node res;
         res.val = a.val + b.val;
         return res;
