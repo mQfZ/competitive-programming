@@ -19,6 +19,8 @@
 -Wcast-align
 -Wno-sign-conversion
 -Wno-pragma-once-outside-header
+-Wno-unused-variable
+-Wno-unused-parameter
 -fno-sanitize-recover=all
 -fstack-protector-all
 -Icphelper/library/cpp/header
