@@ -12,7 +12,10 @@ using namespace std;
  *     Build: O(n)
  *     Update: O(log n)
  *     Query: O(log n)
- * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/cses/1735/main.cpp
+ *     Find First/Last: O(log n)
+ * Verification:
+ *     https://github.com/mQfZ/competitive-programming/blob/master/src/cses/1735/main.cpp
+ *     https://github.com/mQfZ/competitive-programming/blob/master/src/cses/1143/main.cpp
  */
 
 struct segtree {
@@ -63,6 +66,60 @@ struct segtree {
         return res;
     }
 
+    int find_first_knowingly(int x, int l, int r, const function<bool(const node&)>& f) {
+        if (l == r) return l;
+        push(x, l, r);
+        int m = (l + r) >> 1;
+        int y = x + ((m - l + 1) << 1);
+        int res;
+        if (f(tree[x + 1])) res = find_first_knowingly(x + 1, l, m, f);
+        else res = find_first_knowingly(y, m + 1, r, f);
+        pull(x, y);
+        return res;
+    }
+
+    int find_first(int x, int l, int r, int ll, int rr, const function<bool(const node&)>& f) {
+        if (ll <= l && r <= rr) {
+            if (!f(tree[x])) return -1;
+            return find_first_knowingly(x, l, r, f);
+        }
+        push(x, l, r);
+        int m = (l + r) >> 1;
+        int y = x + ((m - l + 1) << 1);
+        int res = -1;
+        if (ll <= m) res = find_first(x + 1, l, m, ll, rr, f);
+        if (rr > m && res == -1) res = find_first(y, m + 1, r, ll, rr, f);
+        pull(x, y);
+        return res;
+    }
+
+    int find_last_knowingly(int x, int l, int r, const function<bool(const node&)>& f) {
+        if (l == r) return l;
+        push(x, l, r);
+        int m = (l + r) >> 1;
+        int y = x + ((m - l + 1) << 1);
+        int res;
+        if (f(tree[y])) res = find_last_knowingly(y, m + 1, r, f);
+        else res = find_last_knowingly(x + 1, l, m, f);
+        pull(x, y);
+        return res;
+    }
+
+    int find_last(int x, int l, int r, int ll, int rr, const function<bool(const node&)>& f) {
+        if (ll <= l && r <= rr) {
+            if (!f(tree[x])) return -1;
+            return find_last_knowingly(x, l, r, f);
+        }
+        push(x, l, r);
+        int m = (l + r) >> 1;
+        int y = x + ((m - l + 1) << 1);
+        int res = -1;
+        if (rr > m) res = find_last(y, m + 1, r, ll, rr, f);
+        if (ll <= m && res == -1) res = find_last(x + 1, l, m, ll, rr, f);
+        pull(x, y);
+        return res;
+    }
+
     segtree(int _n) : n(_n) {
         assert(n > 0);
         tree.resize(2 * n - 1);
@@ -76,17 +133,31 @@ struct segtree {
         build(0, 0, n - 1, v);
     }
 
-    // update [l, r]
+    // update range [l, r]
     template <typename... Ts>
     void update(int l, int r, const Ts&... v) {
         assert(0 <= l && l <= r && r <= n - 1);
         return update(0, 0, n - 1, l, r, v...);
     }
 
-    // query [l, r]
+    // query range [l, r]
     node query(int l, int r) {
         assert(0 <= l && l <= r && r <= n - 1);
         return query(0, 0, n - 1, l, r);
+    }
+
+    // finds first index i where f(tree[i]) is true in range [l, r], else -1
+    // each parent node must return true iff at least one child node returns true
+    int find_first(int l, int r, const function<bool(const node&)>& f) {
+        assert(0 <= l && l <= r && r <= n - 1);
+        return find_first(0, 0, n - 1, l, r, f);
+    }
+
+    // finds last index i where f(tree[i]) is true in range [l, r], else -1
+    // each parent node must return true iff at least one child node returns true
+    int find_last(int l, int r, const function<bool(const node&)>& f) {
+        assert(0 <= l && l <= r && r <= n - 1);
+        return find_last(0, 0, n - 1, l, r, f);
     }
 
     struct node {
@@ -112,7 +183,7 @@ struct segtree {
     inline void push(int x, int l, int r) {
         int m = (l + r) >> 1;
         int y = x + ((m - l + 1) << 1);
-        // push from x into (x + 1) and y
+        // push from x into (x + 1) with range [l, m] and y with range [m + 1, r]
         tree[x + 1].apply(l, m, tree[x].add);
         tree[y].apply(m + 1, r, tree[x].add);
         tree[x].add = 0;

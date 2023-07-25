@@ -25,14 +25,14 @@ struct segtree {
         tree[p] = unite(tree[2 * p], tree[2 * p + 1]);
     }
 
-    // update a[i]
+    // update point i
     template <typename... Ts>
-    void update(int i, const Ts&... val) {
-        tree[i += n].apply(val...);
-        for (i /= 2; i > 0; i /= 2) pull(i);
+    void update(int x, const Ts&... val) {
+        tree[x += n].apply(val...);
+        for (x /= 2; x > 0; x /= 2) pull(x);
     }
 
-    // query [l, r]
+    // query range [l, r]
     node query(int l, int r) {
         node ra, rb;
         for (l += n, r += n + 1; l < r; l /= 2, r /= 2) {
@@ -44,7 +44,7 @@ struct segtree {
 
     struct node {
         // make sure to set default value
-        int val = 0;
+        long long val = 0;
 
         // apply value to node when updating
         void apply(int v) {

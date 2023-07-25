@@ -22,14 +22,14 @@ struct fenwick {
         tree.resize(n);
     }
 
-    // increment a[x]
+    // update point x
     void update(int x, T v) {
         for (++x; x <= n; x += x & -x) {
             tree[x - 1] += v;
         }
     }
 
-    // query [0, x]
+    // query range [0, x]
     T query(int x) {
         T total = 0;
         for (++x; x > 0; x -= x & -x) {
@@ -38,7 +38,7 @@ struct fenwick {
         return total;
     }
     
-    // query [l, r]
+    // query range [l, r]
     T query(int l, int r) {
         return query(r) - query(l - 1);
     }
