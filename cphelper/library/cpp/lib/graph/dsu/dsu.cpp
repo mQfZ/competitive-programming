@@ -11,11 +11,11 @@ using namespace std;
  * Verification: https://judge.yosupo.jp/submission/141446
  */
 
-struct DSU {
+struct dsu {
     int n;
     vector<int> e;
 
-    DSU(int _n) : n(_n) {
+    dsu(int _n) : n(_n) {
         e.resize(n, -1);
     }
 
