@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
+#pragma once
 
 void set_io(string s) {
 #ifndef LOCAL
