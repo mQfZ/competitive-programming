@@ -5,9 +5,9 @@ using namespace std;
 /**
  * Lazy Segment Tree
  * Description:
- *    1D range update and range query where unite is any associatve operation.
+ *    1D range update and range query where unite is any associatve operation. 
  *    Uses lazy propogation to range update and euler tour traversal to reduce 
- *    memory from 4 * n to 2 * n - 1.
+ *    memory from 4n to 2n - 1.
  * Time Complexity:
  *     Build: O(n)
  *     Update: O(log n)

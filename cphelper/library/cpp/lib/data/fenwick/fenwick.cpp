@@ -5,20 +5,21 @@ using namespace std;
 /**
  * Fenwick Tree
  * Description:
- *    Computes partial sums a[l] + a[l + 1] + ... + a[r], and increments
- *    single element a[x]
+ *    1D point increment/update and rectangle query where the operation is 
+ *    invertible (addition, multiplication). Can also be range update and 
+ *    point query.
  * Time Complexity:
- *    Update: O(log n)
- *    Query: O(log n)
+ *    Update: O((log n) ^ 2)
+ *    Query: O((log n) ^ 2)
  * Verification: https://judge.yosupo.jp/submission/141443
  */
 
 template <typename T>
-struct fenwick {
+struct fenwick2d {
     int n;
     vector<T> tree;
 
-    fenwick(int _n) : n(_n) {
+    fenwick2d(int _n) : n(_n) {
         tree.resize(n);
     }
 
