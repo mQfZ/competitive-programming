@@ -9,8 +9,8 @@ using namespace std;
  *    invertible (addition, multiplication). Can also be rectangle update 
  *    and point query.
  * Time Complexity:
- *    Update: O(log n)
- *    Query: O(log n)
+ *    Update: O(log n * log m)
+ *    Query: O(log n * log m)
  * Verification:
  *     https://github.com/mQfZ/competitive-programming/blob/master/src/usaco/2017/open/plat/1/main.cpp
  *     https://github.com/mQfZ/competitive-programming/blob/master/src/cses/1739/main.cpp

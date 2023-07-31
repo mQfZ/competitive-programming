@@ -9,17 +9,17 @@ using namespace std;
  *    invertible (addition, multiplication). Can also be range update and 
  *    point query.
  * Time Complexity:
- *    Update: O((log n) ^ 2)
- *    Query: O((log n) ^ 2)
+ *    Update: O(log n)
+ *    Query: O(log n)
  * Verification: https://judge.yosupo.jp/submission/141443
  */
 
 template <typename T>
-struct fenwick2d {
+struct fenwick {
     int n;
     vector<T> tree;
 
-    fenwick2d(int _n) : n(_n) {
+    fenwick(int _n) : n(_n) {
         tree.resize(n);
     }
 
