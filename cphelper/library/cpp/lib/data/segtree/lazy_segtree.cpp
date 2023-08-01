@@ -167,7 +167,7 @@ struct segtree {
 
         // apply value to range [l, r] when updating
         void apply(int l, int r, long long v) {
-            val += (long long) (r - l + 1) * add;
+            val += (long long) (r - l + 1) * v;
             add += v;
         }
     };
