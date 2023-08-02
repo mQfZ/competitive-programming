@@ -5,7 +5,7 @@ using namespace std;
 /**
  * Modular Integer
  * Description:
- *    Basic modular arithmetic operations (excluding division)
+ *    Basic modular arithmetic operations (excluding division).
  * Verification: https://codeforces.com/contest/1279/submission/207090651
  */
 
