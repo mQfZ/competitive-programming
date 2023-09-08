@@ -1,6 +1,7 @@
 /notes
 /.nvim-snippets
 /.vscode/cp.code-snippets
+/src/tmp
 f*.in
 f*.out
 __pycache__/
