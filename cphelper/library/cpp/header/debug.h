@@ -38,7 +38,7 @@ License (MIT):
 
 // First X items to show in an interable.
 #ifndef DBG_ITERABLE_LENGTH
-#define DBG_ITERABLE_LENGTH 10
+#define DBG_ITERABLE_LENGTH 20
 #endif
 
 // Max length of the path of the file.
