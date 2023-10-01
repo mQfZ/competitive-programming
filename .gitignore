@@ -2,6 +2,7 @@
 /.nvim-snippets
 /.vscode/cp.code-snippets
 /src/tmp
+/src/aops
 f*.in
 f*.out
 __pycache__/
