@@ -21,8 +21,14 @@ struct fenwick2d {
     int n, m;
     vector<vector<T>> tree;
 
-    fenwick2d(int _n, int _m) : n(_n), m(_m) {
-        tree.resize(n, vector<int>(m));
+    fenwick2d(int _n = -1, int _m = -1) {
+        if (_n >= 0 && _m >= 0) init(_n, _m);
+    }
+
+    void init(int _n, int _m) {
+        n = _n;
+        m = _m;
+        tree.resize(n, vector<T>(m));
     }
 
     // update point (x, y)

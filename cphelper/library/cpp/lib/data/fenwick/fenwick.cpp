@@ -11,7 +11,7 @@ using namespace std;
  * Time Complexity:
  *    Update: O(log n)
  *    Query: O(log n)
- * Verification: https://judge.yosupo.jp/submission/141443
+ * Verification: https://judge.yosupo.jp/submission/173599
  */
 
 template <typename T>
@@ -19,7 +19,12 @@ struct fenwick {
     int n;
     vector<T> tree;
 
-    fenwick(int _n) : n(_n) {
+    fenwick(int _n = -1) {
+        if (_n >= 0) init(_n);
+    }
+
+    void init(int _n) {
+        n = _n;
         tree.resize(n);
     }
 

@@ -120,15 +120,24 @@ struct segtree {
         return res;
     }
 
-    segtree(int _n) : n(_n) {
-        assert(n > 0);
+    segtree(int _n = -1) {
+        if (_n >= 0) init(_n);
+    }
+
+    template <typename T>
+    segtree(const vector<T>& v) {
+        init(v);
+    }
+
+    void init(int _n) {
+        n = _n;
         tree.resize(2 * n - 1);
         build(0, 0, n - 1);
     }
 
     template <typename T>
-    segtree(const vector<T>& v) : n((int) v.size()) {
-        assert(n > 0);
+    void init(const vector<T>& v) {
+        n = (int) v.size();
         tree.resize(2 * n - 1);
         build(0, 0, n - 1, v);
     }

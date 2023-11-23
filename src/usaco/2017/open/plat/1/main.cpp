@@ -22,9 +22,11 @@ void set_io(string s) {
  *    invertible (addition, multiplication). Can also be rectangle update 
  *    and point query.
  * Time Complexity:
- *    Update: O(log n)
- *    Query: O(log n)
- * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/usaco/2017/open/plat/1/main.cpp
+ *    Update: O(log n * log m)
+ *    Query: O(log n * log m)
+ * Verification:
+ *     https://github.com/mQfZ/competitive-programming/blob/master/src/usaco/2017/open/plat/1/main.cpp
+ *     https://github.com/mQfZ/competitive-programming/blob/master/src/cses/1739/main.cpp
  */
 
 template <typename T>
@@ -32,8 +34,14 @@ struct fenwick2d {
     int n, m;
     vector<vector<T>> tree;
 
-    fenwick2d(int _n, int _m) : n(_n), m(_m) {
-        tree.resize(n, vector<int>(m));
+    fenwick2d(int _n = -1, int _m = -1) {
+        if (_n >= 0 && _m >= 0) init(_n, _m);
+    }
+
+    void init(int _n, int _m) {
+        n = _n;
+        m = _m;
+        tree.resize(n, vector<T>(m));
     }
 
     // update point (x, y)

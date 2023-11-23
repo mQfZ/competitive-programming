@@ -1,6 +1,5 @@
 #include <bits/stdc++.h>
 using namespace std;
-#pragma once
 
 /**
  * Segment Tree
@@ -9,7 +8,7 @@ using namespace std;
  * Time Complexity:
  *     Update: O(log n)
  *     Query: O(log n)
- * Verification: https://judge.yosupo.jp/submission/141445
+ * Verification: https://judge.yosupo.jp/submission/173605
  */
 
 struct segtree {
@@ -17,7 +16,12 @@ struct segtree {
     struct node;
     vector<node> tree;
 
-    segtree(int _n) : n(_n) {
+    segtree(int _n = -1) {
+        if (_n >= 0) init(_n);
+    }
+
+    void init(int _n) {
+        n = _n;
         tree.resize(2 * n);
     }
 
@@ -25,7 +29,7 @@ struct segtree {
         tree[p] = unite(tree[2 * p], tree[2 * p + 1]);
     }
 
-    // update point i
+    // update point x
     template <typename... Ts>
     void update(int x, const Ts&... val) {
         tree[x += n].apply(val...);
@@ -47,7 +51,7 @@ struct segtree {
         long long val = 0;
 
         // apply value to node when updating
-        void apply(int v) {
+        void apply(long long v) {
             val += v;
         }
     };
