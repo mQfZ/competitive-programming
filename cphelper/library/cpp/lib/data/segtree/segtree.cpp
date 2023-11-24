@@ -22,7 +22,7 @@ struct segtree {
 
     void init(int _n) {
         n = _n;
-        tree.resize(2 * n);
+        tree.assign(2 * n, {});
     }
 
     void pull(int p) {

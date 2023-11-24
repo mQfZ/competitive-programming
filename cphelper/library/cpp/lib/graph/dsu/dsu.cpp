@@ -21,7 +21,7 @@ struct dsu {
 
     void init(int _n) {
         n = _n;
-        e.resize(n, -1);
+        e.assign(n, -1);
     }
 
     int get(int x) {

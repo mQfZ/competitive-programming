@@ -11,7 +11,7 @@ using namespace std;
  * Time Complexity:
  *    Update: O(log n)
  *    Query: O(log n)
- * Verification: https://judge.yosupo.jp/submission/173599
+ * Verification: https://judge.yosupo.jp/submission/173798
  */
 
 template <typename T>
@@ -25,7 +25,7 @@ struct fenwick {
 
     void init(int _n) {
         n = _n;
-        tree.resize(n);
+        tree.assign(n, {});
     }
 
     // update point x

@@ -34,7 +34,7 @@ struct fenwick2d {
     void init(int _n, int _m) {
         n = _n;
         m = _m;
-        tree.resize(n, vector<T>(m));
+        tree.assign(n, vector<T>(m, {}));
     }
 
     // update point (x, y)

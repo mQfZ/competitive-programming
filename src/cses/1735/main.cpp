@@ -137,14 +137,14 @@ struct segtree {
 
     void init(int _n) {
         n = _n;
-        tree.resize(2 * n - 1);
+        tree.assign(2 * n - 1, {});
         build(0, 0, n - 1);
     }
 
     template <typename T>
     void init(const vector<T>& v) {
         n = (int) v.size();
-        tree.resize(2 * n - 1);
+        tree.assign(2 * n - 1, {});
         build(0, 0, n - 1, v);
     }
 
