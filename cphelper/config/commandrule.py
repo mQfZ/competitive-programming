@@ -90,6 +90,7 @@ COMMAND_RULE_LIST = [
             "-std=c++20",
 
             # Include
+            "-I${LIBRARY_DIR}",
             "-I${LIBRARY_DIR}/header",
             "-I${LIBRARY_DIR}/header/bits/normal",
             
@@ -133,6 +134,7 @@ COMMAND_RULE_LIST = [
             "-Wno-unused-result", "-Wno-unused-variable",
             
             # Include
+            "-I${LIBRARY_DIR}",
             "-I${LIBRARY_DIR}/header",
             "-I${LIBRARY_DIR}/header/bits/debug",
 
