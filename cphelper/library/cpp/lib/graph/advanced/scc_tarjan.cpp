@@ -2,7 +2,7 @@
 using namespace std;
 #pragma once
 
-#include <lib/graph/graph/digraph.cpp>
+#include <lib/graph/primitive/digraph.cpp>
 
 /**
  * Strongly Connected Components (Tarjan's Algorithm)

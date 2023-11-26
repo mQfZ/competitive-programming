@@ -2,7 +2,7 @@
 using namespace std;
 #pragma once
 
-#include <lib/graph/graph/graph.cpp>
+#include <lib/graph/primitive/graph.cpp>
 
 /**
  * Undirected Graph
