@@ -2,7 +2,7 @@
 using namespace std;
 #pragma once
 
-#include <lib/numeric/mint/mint_inv.cpp>  // noimport
+#include <lib/numeric/mint/mint.cpp>
 
 /**
  * Combinatorics
