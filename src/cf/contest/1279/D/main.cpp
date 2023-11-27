@@ -131,7 +131,7 @@ T intpow(const T& a, const U& b) {
 }
 
 // change to false if mod is not known at compile time
-#if false  // constant mod
+#if true  // constant mod
 const long long md = 998244353;
 using mint = modular<std::integral_constant<decay<decltype(md)>::type, md>>;
 #else    // dynamic mod
@@ -175,7 +175,6 @@ mint C(int n, int k) {
 int main() {
     ios::sync_with_stdio(0); cin.tie(0);
     int n; cin >> n;
-    md = 998244353 + n / 248762;
     const int mx = (int) (1e6) + 10;
     vector<mint> sums(mx), freq(mx);
     for (int i = 0; i < n; ++i) {
