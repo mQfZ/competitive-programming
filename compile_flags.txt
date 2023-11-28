@@ -17,8 +17,9 @@
 -Wduplicated-cond
 -Wcast-qual
 -Wcast-align
--Wno-sign-conversion
+-Wno-bool-compare
 -Wno-pragma-once-outside-header
+-Wno-sign-conversion
 -Wno-unused-variable
 -Wno-unused-parameter
 -fno-sanitize-recover=all

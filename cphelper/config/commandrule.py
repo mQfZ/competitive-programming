@@ -55,8 +55,9 @@ COMMAND_RULE_LIST = [
             "-Wduplicated-cond", "-Wcast-qual", "-Wcast-align",
             
             # Disabled Warnings
-            "-Wno-sign-conversion", "-Wno-unused-parameter",
-            "-Wno-unused-result", "-Wno-unused-variable",
+            "-Wno-bool-compare", "-Wno-sign-conversion",
+            "-Wno-unused-parameter", "-Wno-unused-result",
+            "-Wno-unused-variable",
             
             # Extra Debug
             "-D_FORTIFY_SOURCE=2", "-D_GLIBCXX_DEBUG",
@@ -130,8 +131,9 @@ COMMAND_RULE_LIST = [
             "-Wduplicated-cond", "-Wcast-qual", "-Wcast-align",
             
             # Disabled Warnings
-            "-Wno-sign-conversion", "-Wno-unused-parameter",
-            "-Wno-unused-result", "-Wno-unused-variable",
+            "-Wno-bool-compare", "-Wno-sign-conversion",
+            "-Wno-unused-parameter", "-Wno-unused-result",
+            "-Wno-unused-variable",
             
             # Include
             "-I${LIBRARY_DIR}",
