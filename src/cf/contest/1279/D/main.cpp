@@ -5,20 +5,8 @@ using namespace std;
  * Modular Integer
  * Description:
  *    Static/Dynamic modular integer.
- * Verification: https://codeforces.com/contest/1279/submission/234536696
+ * Verification: https://codeforces.com/contest/1279/submission/234657671
  */
-
-template <typename T>
-T inverse(T a, T m) {
-    T u = 0, v = 1;
-    while (a != 0) {
-        T t = m / a;
-        m -= t * a; swap(a, m);
-        u -= t * v; swap(u, v);
-    }
-    assert(m == 1);
-    return u;
-}
 
 template <typename MT>
 struct modular {
@@ -43,96 +31,74 @@ struct modular {
     explicit operator U() const { return static_cast<U>(v); }
     constexpr static T mod() { return MT::value; }
 
+    template <typename T>
+    T mod_inv(T a, T m) {
+        T x = 0, y = 1;
+        while (a != 0) {
+            T t = m / a;
+            m -= t * a; swap(a, m);
+            x -= t * y; swap(x, y);
+        }
+        assert(m == 1);
+        return x;
+    }
+
     modular& operator+=(const modular& o) { if ((v += o.v) >= mod()) v -= mod(); return *this; }
-    template <typename U> modular& operator+=(const U& o) { return *this += modular(o); }
     modular& operator-=(const modular& o) { if ((v -= o.v) < 0) v += mod(); return *this; }
-    template <typename U> modular& operator-=(const U& o) { return *this -= modular(o); }
     modular& operator*=(const modular& o) { v = normalize((long long) v * o.v); return *this; }
-    template <typename U> modular& operator*=(const U& o) { return *this *= modular(o); }
-    modular& operator/=(const modular& o) { return *this *= inverse(o.v, mod()); }
-    template <typename U> modular& operator/=(const U& o) { return *this /= modular(o); }
+    modular& operator/=(const modular& o) { return *this *= mod_inv(o.v, mod()); }
+
+    friend modular operator+(const modular& a, const modular& b) { return modular(a) += b; }
+    friend modular operator-(const modular& a, const modular& b) { return modular(a) -= b; }
+    friend modular operator*(const modular& a, const modular& b) { return modular(a) *= b; }
+    friend modular operator/(const modular& a, const modular& b) { return modular(a) /= b; }
 
     modular& operator++() { return *this += 1; }
     modular operator++(int) { modular result(*this); *this += 1; return result; }
     modular& operator--() { return *this -= 1; }
     modular operator--(int) { modular result(*this); *this -= 1; return result; }
     modular operator-() const { return modular(-v); }
-};
 
-template <typename T> bool operator==(const modular<T>& a, const modular<T>& b) { return a.v == b.v; }
-template <typename T, typename U> bool operator==(const modular<T>& a, U b) { return a.v == b; }
-template <typename T, typename U> bool operator==(U a, const modular<T>& b) { return a == b.v; }
- 
-template <typename T> bool operator!=(const modular<T>& a, const modular<T>& b) { return a.v != b.v; }
-template <typename T, typename U> bool operator!=(const modular<T>& a, U b) { return a.v != b; }
-template <typename T, typename U> bool operator!=(U a, const modular<T>& b) { return a != b.v; }
- 
-template <typename T> bool operator<(const modular<T>& a, const modular<T>& b) { return a.v < b.v; }
-template <typename T, typename U> bool operator<(const modular<T>& a, U b) { return a.v < b; }
-template <typename T, typename U> bool operator<(U a, const modular<T>& b) { return a < b.v; }
- 
-template <typename T> bool operator<=(const modular<T>& a, const modular<T>& b) { return a.v <= b.v; }
-template <typename T, typename U> bool operator<=(const modular<T>& a, U b) { return a.v <= b; }
-template <typename T, typename U> bool operator<=(U a, const modular<T>& b) { return a <= b.v; }
- 
-template <typename T> bool operator>(const modular<T>& a, const modular<T>& b) { return a.v > b.v; }
-template <typename T, typename U> bool operator>(const modular<T>& a, U b) { return a.v > b; }
-template <typename T, typename U> bool operator>(U a, const modular<T>& b) { return a > b.v; }
- 
-template <typename T> bool operator>=(const modular<T>& a, const modular<T>& b) { return a.v >= b.v; }
-template <typename T, typename U> bool operator>=(const modular<T>& a, U b) { return a.v >= b; }
-template <typename T, typename U> bool operator>=(U a, const modular<T>& b) { return a >= b.v; }
- 
-template <typename T> modular<T> operator+(const modular<T>& a, const modular<T>& b) { return modular<T>(a) += b; }
-template <typename T, typename U> modular<T> operator+(const modular<T>& a, U b) { return modular<T>(a) += b; }
-template <typename T, typename U> modular<T> operator+(U a, const modular<T>& b) { return modular<T>(a) += b; }
- 
-template <typename T> modular<T> operator-(const modular<T>& a, const modular<T>& b) { return modular<T>(a) -= b; }
-template <typename T, typename U> modular<T> operator-(const modular<T>& a, U b) { return modular<T>(a) -= b; }
-template <typename T, typename U> modular<T> operator-(U a, const modular<T>& b) { return modular<T>(a) -= b; }
- 
-template <typename T> modular<T> operator*(const modular<T>& a, const modular<T>& b) { return modular<T>(a) *= b; }
-template <typename T, typename U> modular<T> operator*(const modular<T>& a, U b) { return modular<T>(a) *= b; }
-template <typename T, typename U> modular<T> operator*(U a, const modular<T>& b) { return modular<T>(a) *= b; }
- 
-template <typename T> modular<T> operator/(const modular<T>& a, const modular<T>& b) { return modular<T>(a) /= b; }
-template <typename T, typename U> modular<T> operator/(const modular<T>& a, U b) { return modular<T>(a) /= b; }
-template <typename T, typename U> modular<T> operator/(U a, const modular<T>& b) { return modular<T>(a) /= b; }
+    friend bool operator==(const modular& a, const modular& b) { return a.v == b.v; }
+    friend bool operator!=(const modular& a, const modular& b) { return a.v != b.v; }
+    friend bool operator<(const modular& a, const modular& b) { return a.v < b.v; }
+    friend bool operator<=(const modular& a, const modular& b) { return a.v <= b.v; }
+    friend bool operator>(const modular& a, const modular& b) { return a.v > b.v; }
+    friend bool operator>=(const modular& a, const modular& b) { return a.v >= b.v; }
 
-
-template <typename U, typename T>
-U& operator<<(U& stream, const modular<T>& a) {
-    return stream << a.v;
-}
-
-template <typename U, typename T>
-U& operator>>(U& stream, modular<T>& a) {
-    typename common_type<typename modular<T>::T, long long>::type x;
-    stream >> x;
-    a.v = modular<T>::normalize(x);
-    return stream;
-}
-
-template <typename T>
-string to_string(const modular<T>& a) {
-    return to_string(a.v);
-}
-
-template <typename T, typename U>
-T intpow(const T& a, const U& b) {
-    T x = a, res = 1;
-    U p = b;
-    while (p > 0) {
-        if (p & 1) res *= x;
-        x *= x;
-        p >>= 1;
+    template <typename U>
+    friend U& operator<<(U& stream, const modular& a) {
+        return stream << a.v;
     }
-    return res;
-}
+
+    template <typename U, typename T>
+    friend U& operator>>(U& stream, modular<T>& a) {
+        typename common_type<typename modular<T>::T, long long>::type x;
+        stream >> x;
+        a.v = modular<T>::normalize(x);
+        return stream;
+    }
+
+    friend string to_string(const modular& a) {
+        return to_string(a.v);
+    }
+
+    template <typename T, typename U>
+    friend T intpow(const T& a, const U& b) {
+        T x = a, res = 1;
+        U p = b;
+        while (p > 0) {
+            if (p & 1) res *= x;
+            x *= x;
+            p >>= 1;
+        }
+        return res;
+    }
+};
 
 // change to false if mod is not known at compile time
 #if true  // constant mod
-const long long md = 998244353;
+const int md = 998244353;
 using mint = modular<std::integral_constant<decay<decltype(md)>::type, md>>;
 #else    // dynamic mod
 using mod_type = int;
@@ -171,6 +137,13 @@ mint C(int n, int k) {
     gen_fact(n);
     return fact[n] * inv_fact[k] * inv_fact[n - k];
 }
+
+#ifdef LOCAL
+#include <debug.h>
+#else
+#define dbg(...) 0
+#define dbgn(...) 0
+#endif
  
 int main() {
     ios::sync_with_stdio(0); cin.tie(0);
