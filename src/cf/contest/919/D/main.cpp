@@ -16,18 +16,22 @@ using namespace std;
  * Verification: N/A
  */
 
-template <typename T>
+template <typename NV = int, typename EV = int>
 struct graph {
     struct edge {
-        int from;
-        int to;
-        T dist;
-        int id;
+        int from, to, id;
+        EV val;
+    };
+    
+    struct node {
+        vector<edge> adj;
+        NV val;
     };
 
     int n;
-    vector<vector<edge>> adj;
+    vector<node> nodes;
     vector<edge> edges;
+    function<bool(const edge&)> ignore;
 
     graph(int _n = -1) {
         if (_n >= 0) init(_n);
@@ -35,11 +39,24 @@ struct graph {
 
     void init(int _n) {
         n = _n;
-        adj.assign(n, {});
+        nodes.assign(n, {{}, {}});
         edges = {};
+        ignore = nullptr;
     }
 
-    virtual int add_edge(int from, int to, T cost) = 0;
+    void set_node(int index, NV val = 0) {
+        nodes[index].val = val;
+    }
+
+    virtual int add_edge(int from, int to, EV val) = 0;
+
+    virtual void set_ignore_edge_rule(const function<bool(const edge&)>& f = nullptr) {
+        ignore = f;
+    }
+
+    virtual bool ignore_edge(const edge& e) {
+        return ignore != nullptr && ignore(e);
+    }
 };
 
 /**
@@ -50,24 +67,34 @@ struct graph {
  * Verification: N/A
  */
 
-template <typename T>
-struct digraph : public graph<T> {
-    using graph<T>::n;
-    using graph<T>::adj;
-    using graph<T>::edges;
+template <typename NV = int, typename EV = int>
+struct digraph : public graph<NV, EV> {
+    using graph<NV, EV>::n;
+    using graph<NV, EV>::nodes;
+    using graph<NV, EV>::edges;
+    using graph<NV, EV>::ignore;
 
-    digraph(int _n = -1) : graph<T>(_n) {}
-
-    void init(int _n) {
-        graph<T>::init(_n);
+    digraph(int _n = -1) {
+        if (_n >= 0) init(_n);
     }
 
-    int add(int from, int to, T cost = 1) {
+    void init(int _n) {
+        graph<NV, EV>::init(_n);
+    }
+
+    int add_edge(int from, int to, EV cost = 1) {
         assert(0 <= from && from < n && 0 <= to && to < n);
         int id = (int) edges.size();
-        adj[from].push_back({from, to, cost, id});
-        edges.push_back({from, to, cost, id});
+        nodes[from].adj.push_back({from, to, id, cost});
+        edges.push_back({from, to, id, cost});
         return id;
+    }
+
+    digraph<NV, EV> reverse() const {
+        digraph<NV, EV> rev(n);
+        for (auto& e : edges) rev.add(e.to, e.from, e.cost);
+        rev.set_ignore_edge_rule(ignore);
+        return rev;
     }
 };
 
@@ -78,11 +105,11 @@ struct digraph : public graph<T> {
  *    each directed edge x -> y, then x comes before y. If there is a cycle, 
  *    then the result will return less than n elements.
  * Time Complexity: O(|V| + |E|)
- * Verification: https://codeforces.com/contest/919/submission/234165355
+ * Verification: https://codeforces.com/contest/919/submission/234176228
  */
 
-template <typename T>
-vector<int> topo_sort(const digraph<T>& g) {
+template <typename NV, typename EV>
+vector<int> topo_sort(const digraph<NV, EV>& g) {
     vector<int> in(g.n), ret;
     for (auto& e : g.edges) ++in[e.to];
     queue<int> q;
@@ -90,7 +117,7 @@ vector<int> topo_sort(const digraph<T>& g) {
     while (!q.empty()) {
         int v = q.front(); q.pop();
         ret.push_back(v);
-        for (auto& e : g.adj[v]) {
+        for (auto& e : g.nodes[v].adj) {
             if ((--in[e.to]) == 0) q.push(e.to);
         }
     }
@@ -102,10 +129,10 @@ int main() {
     int n, m; cin >> n >> m;
     string s; cin >> s;
     vector<vector<int>> inv(n);
-    digraph<int> g(n);
+    digraph g(n);
     while (m--) {
         int x, y; cin >> x >> y;
-        g.add(x - 1, y - 1);
+        g.add_edge(x - 1, y - 1);
         inv[y - 1].push_back(x - 1);
     }
     vector<int> topo = topo_sort(g);
