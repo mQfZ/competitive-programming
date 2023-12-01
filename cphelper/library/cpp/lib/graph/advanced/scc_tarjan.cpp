@@ -12,15 +12,16 @@ using namespace std;
  *    reachable from x and x is reachable from y.
  * Time Complexity: O(|V| + |E|)
  * Verification:
- *     https://judge.yosupo.jp/submission/174000
+ *     https://judge.yosupo.jp/submission/175097
  *     https://github.com/mQfZ/competitive-programming/blob/master/src/cses/1686/main.cpp
  */
 
-template <typename T>
-struct scc : digraph<T> {
-    using digraph<T>::n;
-    using digraph<T>::adj;
-    using digraph<T>::edges;
+template <typename NV = int, typename EV = int>
+struct scc : digraph<NV, EV> {
+    using graph<NV, EV>::n;
+    using graph<NV, EV>::nodes;
+    using graph<NV, EV>::edges;
+    using graph<NV, EV>::ignore_edge;
 
     int time;
     stack<int> stk;
@@ -28,21 +29,23 @@ struct scc : digraph<T> {
     vector<int> tour, low;
 
     vector<int> which;  // indicates which scc the node belongs to
-    vector<vector<int>> comp;  // the vertices in each scc
+    vector<vector<int>> comps;  // the vertices in each scc
+    int cs;  // comps size
 
-    scc(int _n = -1) : digraph<T>(_n) {
+    scc(int _n = -1) {
         if (_n >= 0) init(_n);
     }
 
     void init(int _n) {
-        digraph<T>::init(_n);
+        digraph<NV, EV>::init(_n);
     }
 
     void dfs(int v) {
         low[v] = tour[v] = time++;
         stk.push(v);
         in_stk[v] = true;
-        for (auto& e : adj[v]) {
+        for (auto& e : nodes[v].adj) {
+            if (ignore_edge(e)) continue;
             if (tour[e.to] == -1) {
                 dfs(e.to);
                 low[v] = min(low[v], low[e.to]);
@@ -51,15 +54,15 @@ struct scc : digraph<T> {
             }
         }
         if (low[v] == tour[v]) {
-            comp.push_back({});
+            comps.push_back({});
             int x;
             do {
                 assert(!stk.empty());
                 x = stk.top();
                 stk.pop();
                 in_stk[x] = false;
-                which[x] = (int) comp.size() - 1;
-                comp.back().push_back(x);
+                which[x] = (int) comps.size() - 1;
+                comps.back().push_back(x);
             } while (x != v);
         }
     }
@@ -69,27 +72,16 @@ struct scc : digraph<T> {
         low.resize(n);
         which.assign(n, -1);
         in_stk.assign(n, false);
-        comp = {};
+        comps = {};
         time = 0;
         for (int i = 0; i < n; ++i) {
             if (tour[i] == -1) dfs(i);
         }
         // tarjan returns in reverse topological order
-        reverse(comp.begin(), comp.end());
+        cs = (int) comps.size();
+        reverse(comps.begin(), comps.end());
         for (int i = 0; i < n; ++i) {
-            which[i] = (int) comp.size() - which[i] - 1;
+            which[i] = cs - which[i] - 1;
         }
-    }
-
-    // compress scc into a topologically sorted graph (each scc is one node)
-    digraph<T> compress() {
-        assert(comp.size() > 0);
-        digraph<T> ng((int) comp.size());
-        for (auto& e : edges) {
-            if (which[e.from] != which[e.to]) {
-                ng.add(which[e.from], which[e.to], e.dist);
-            }
-        }
-        return ng;
     }
 };

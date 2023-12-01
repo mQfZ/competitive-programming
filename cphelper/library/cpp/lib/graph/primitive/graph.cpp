@@ -10,18 +10,22 @@ using namespace std;
  * Verification: N/A
  */
 
-template <typename T>
+template <typename NV = int, typename EV = int>
 struct graph {
     struct edge {
-        int from;
-        int to;
-        T dist;
-        int id;
+        int from, to, id;
+        EV val;
+    };
+    
+    struct node {
+        vector<edge> adj;
+        NV val;
     };
 
     int n;
-    vector<vector<edge>> adj;
+    vector<node> nodes;
     vector<edge> edges;
+    function<bool(const edge&)> ignore;
 
     graph(int _n = -1) {
         if (_n >= 0) init(_n);
@@ -29,9 +33,22 @@ struct graph {
 
     void init(int _n) {
         n = _n;
-        adj.assign(n, {});
+        nodes.assign(n, {{}, {}});
         edges = {};
+        ignore = nullptr;
     }
 
-    virtual int add(int from, int to, T cost) = 0;
+    void set_node(int index, NV val = 0) {
+        nodes[index].val = val;
+    }
+
+    virtual int add_edge(int from, int to, EV val) = 0;
+
+    virtual void set_ignore_edge_rule(const function<bool(const edge&)>& f = nullptr) {
+        ignore = f;
+    }
+
+    virtual bool ignore_edge(const edge& e) {
+        return ignore != nullptr && ignore(e);
+    }
 };

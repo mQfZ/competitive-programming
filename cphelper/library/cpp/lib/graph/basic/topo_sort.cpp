@@ -11,11 +11,11 @@ using namespace std;
  *    each directed edge x -> y, then x comes before y. If there is a cycle, 
  *    then the result will return less than n elements.
  * Time Complexity: O(|V| + |E|)
- * Verification: https://codeforces.com/contest/919/submission/234176228
+ * Verification: https://codeforces.com/contest/919/submission/235181749
  */
 
-template <typename T>
-vector<int> topo_sort(const digraph<T>& g) {
+template <typename NV, typename EV>
+vector<int> topo_sort(const digraph<NV, EV>& g) {
     vector<int> in(g.n), ret;
     for (auto& e : g.edges) ++in[e.to];
     queue<int> q;
@@ -23,7 +23,7 @@ vector<int> topo_sort(const digraph<T>& g) {
     while (!q.empty()) {
         int v = q.front(); q.pop();
         ret.push_back(v);
-        for (auto& e : g.adj[v]) {
+        for (auto& e : g.nodes[v].adj) {
             if ((--in[e.to]) == 0) q.push(e.to);
         }
     }

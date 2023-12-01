@@ -12,23 +12,33 @@ using namespace std;
  * Verification: N/A
  */
 
-template <typename T>
-struct digraph : public graph<T> {
-    using graph<T>::n;
-    using graph<T>::adj;
-    using graph<T>::edges;
+template <typename NV = int, typename EV = int>
+struct digraph : public graph<NV, EV> {
+    using graph<NV, EV>::n;
+    using graph<NV, EV>::nodes;
+    using graph<NV, EV>::edges;
+    using graph<NV, EV>::ignore;
 
-    digraph(int _n = -1) : graph<T>(_n) {}
-
-    void init(int _n) {
-        graph<T>::init(_n);
+    digraph(int _n = -1) {
+        if (_n >= 0) init(_n);
     }
 
-    int add(int from, int to, T cost = 1) {
+    void init(int _n) {
+        graph<NV, EV>::init(_n);
+    }
+
+    int add_edge(int from, int to, EV cost = 1) {
         assert(0 <= from && from < n && 0 <= to && to < n);
         int id = (int) edges.size();
-        adj[from].push_back({from, to, cost, id});
-        edges.push_back({from, to, cost, id});
+        nodes[from].adj.push_back({from, to, id, cost});
+        edges.push_back({from, to, id, cost});
         return id;
+    }
+
+    digraph<NV, EV> reverse() const {
+        digraph<NV, EV> rev(n);
+        for (auto& e : edges) rev.add(e.to, e.from, e.cost);
+        rev.set_ignore_edge_rule(ignore);
+        return rev;
     }
 };
