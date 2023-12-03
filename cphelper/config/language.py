@@ -15,6 +15,10 @@ def cpp_snippet_expansion(snippets_dict: dict[Path, str], lib_dir: Path,
     if file in snippets_dict:
         return
     
+    if not file.exists():
+        raise FileNotFoundError(f"File: {color(str(file), Color.CYAN)} "
+                                f"cannot be imported as it does not exist.")
+    
     content = file.read_text()[:-1].split("\n")
 
     new: list[str] = []
@@ -29,11 +33,9 @@ def cpp_snippet_expansion(snippets_dict: dict[Path, str], lib_dir: Path,
         
         if line.strip().startswith("#include <lib"):
             path = lib_dir / line.strip()[14:-1]
-            cpp_snippet_expansion(snippets_dict, lib_dir, path)
             if path not in snippets_dict:
-                raise FileNotFoundError(f"File: {color(str(path), Color.CYAN)} "
-                                        f"is not present in snippets_dict.")
-            new.extend(snippets_dict[path].split("\n"))
+                cpp_snippet_expansion(snippets_dict, lib_dir, path)
+                new.extend(snippets_dict[path].split("\n"))
             continue
         
         new.append(line)

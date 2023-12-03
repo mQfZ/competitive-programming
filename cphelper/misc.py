@@ -107,7 +107,6 @@ def generate_snippets():
     Generate all snippets.
     """
 
-    snippets_obj = {}
     neovim_snippets = {}
     vscode_snippets = {}
 
@@ -116,8 +115,10 @@ def generate_snippets():
             if not snippet.is_file():
                 continue
 
-            library.snippet_expansion(snippets_obj,
-                                      library.library_directory, snippet)
+            snippets_obj = {}
+
+            library.snippet_expansion(snippets_obj, library.library_directory,
+                                      snippet)
 
             if library.lang not in neovim_snippets:
                 neovim_snippets[library.lang] = {}
