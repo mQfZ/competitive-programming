@@ -8,6 +8,13 @@ using namespace std;
 #define dbgn(...) 0
 #endif
 
+void set_io(string s) {
+#ifndef LOCAL
+    freopen((s + ".in").c_str(), "r", stdin);
+    freopen((s + ".out").c_str(), "w", stdout);
+#endif
+}
+
 /**
  * Point
  * Description:
@@ -110,22 +117,43 @@ vector<point<T>> convex_hull(vector<point<T>> v) {
     return h;
 };
 
+/**
+ * Point in Convex Hull
+ * Description:
+ *    Checks if a point is inside the convex hull. Returns 1 if inside, 0 if
+ *    on an edge and -1 if outside.
+ * Time Complexity: O(log n)
+ * Verification: N/A
+ */
+
+template <typename T>
+int inside_hull(const vector<point<T>>& h, const point<T>& p) {
+    assert(h.size() > 0);
+    if (h.size() < 3) return on_seg(h[0], h.back(), p) ? 0 : -1;
+    if (side_of(h[0], h[1], p) == -1 || side_of(h[0], h.back(), p) == 1) return -1;
+    int l = 1, r = (int) h.size() - 1;
+    while (r - l > 1) {
+        int m = (l + r) / 2;
+        if (side_of(h[0], h[m], p) <= 0) r = m;
+        else l = m;
+    }
+    assert(side_of(h[0], h[l], p) >= 0);
+    assert(side_of(h[0], h[r], p) <= 0);
+    return side_of(h[l], h[r], p);
+}
+
 int main() {
+    set_io("curling");
     ios::sync_with_stdio(0); cin.tie(0);
     int n; cin >> n;
-    vector<point<long double>> a(n + 1);
-    for (int i = 1; i <= n; ++i) {
-        int z; cin >> z;
-        a[i] = {(long double) i, a[i - 1].y + z};
+    vector<point<long long>> a(n), b(n);
+    for (auto& x : a) cin >> x;
+    for (auto& x : b) cin >> x;
+    vector<point<long long>> ha = convex_hull(a), hb = convex_hull(b);
+    int aa = 0, bb = 0;
+    for (int i = 0; i < n; ++i) {
+        aa += inside_hull(ha, b[i]) >= 0;
+        bb += inside_hull(hb, a[i]) >= 0;
     }
-    vector<point<long double>> h = convex_hull(a);
-    vector<long double> ans(n);
-    dbg(h);
-    for (int i = 1; i < (int) h.size(); ++i) {
-        long double curr = (h[i].y - h[i - 1].y) / (h[i].x - h[i - 1].x);
-        for (int j = (int) h[i - 1].x; j < (int) h[i].x; ++j) ans[j] = curr;
-        if ((int) h[i].x == n) break;
-    }
-    cout << fixed << setprecision(9);
-    for (auto& x : ans) cout << x << '\n';
+    cout << aa << ' ' << bb << '\n';
 }
