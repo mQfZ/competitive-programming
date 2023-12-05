@@ -2,7 +2,7 @@
 using namespace std;
 #pragma once
 
-#include <lib/graph/primitive/digraph.cpp>
+#include <lib/graph/graph/digraph.cpp>
 
 /**
  * Topological Sort
