@@ -70,6 +70,7 @@ int side_of(const point<T>& s, const point<T>& e, const point<T>& p) {
     return sign(s.cross(e, p));
 }
 
+// 1 iff p is on line segment from s to e
 template <typename T>
 bool on_seg(const point<T>& s, const point<T>& e, const point<T>& p) {
     return sign(p.cross(s, e)) == 0 && sign((s - p).dot(e - p)) <= 0;

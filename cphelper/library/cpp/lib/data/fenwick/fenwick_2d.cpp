@@ -31,8 +31,8 @@ struct fenwick2d {
         tree.assign(n, vector<T>(m, {}));
     }
 
-    // update point (x, y)
-    void update(int x, int y, T v) {
+    // increment point (x, y) by v
+    void add(int x, int y, T v) {
         for (int i = x + 1; i <= n; i += i & -i) {
             for (int j = y + 1; j <= m; j += j & -j) {
                 tree[i - 1][j - 1] += v;

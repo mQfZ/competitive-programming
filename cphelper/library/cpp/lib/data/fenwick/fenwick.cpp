@@ -28,8 +28,8 @@ struct fenwick {
         tree.assign(n, {});
     }
 
-    // update point x
-    void update(int x, T v) {
+    // increment point x by v
+    void add(int x, T v) {
         for (++x; x <= n; x += x & -x) {
             tree[x - 1] += v;
         }
