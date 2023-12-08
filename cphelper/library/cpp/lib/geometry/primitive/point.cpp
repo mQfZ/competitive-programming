@@ -13,8 +13,7 @@ using namespace std;
 using dist_t = long double;
 using angle_t = long double;
 
-const dist_t eps = 1e-9;
-template <typename T> int sign(const T& x) { return (x > eps) - (x < -eps); }
+template <typename T> int sign(const T& x) { return (x > 0) - (x < 0); }
 
 template <typename T>
 struct point {
