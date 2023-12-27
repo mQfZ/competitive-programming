@@ -198,7 +198,7 @@ struct segtree {
         tree[x].add = 0;
     }
 
-    // pull two child nodes into parent node
+    // pull child nodes into parent node
     inline void pull(int x, int y) {
         tree[x] = unite(tree[x + 1], tree[y]);
     }

@@ -26,10 +26,6 @@ struct segtree {
         tree.assign(2 * n, {});
     }
 
-    void pull(int p) {
-        tree[p] = unite(tree[2 * p], tree[2 * p + 1]);
-    }
-
     // update point x
     template <typename... Ts>
     void update(int x, const Ts&... val) {
@@ -62,5 +58,10 @@ struct segtree {
         node res;
         res.val = a.val + b.val;
         return res;
+    }
+    
+    // pull child nodes into parent node
+    inline void pull(int p) {
+        tree[p] = unite(tree[2 * p], tree[2 * p + 1]);
     }
 };
