@@ -8,13 +8,15 @@ using namespace std;
  *    Disjoint Set Union with path compression and union by size. Add edges 
  *    and test connectivity.
  * Time Complexity: O(alpha(N))
- * Verification: https://judge.yosupo.jp/submission/173604
+ * Verification: https://judge.yosupo.jp/submission/180951
  */
 
-struct dsu {
+class dsu {
+private:
     int n;
     vector<int> e;
 
+public:
     dsu(int _n = -1) {
         if (_n >= 0) init(_n);
     }
