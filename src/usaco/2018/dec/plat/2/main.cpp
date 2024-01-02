@@ -25,25 +25,32 @@ const long long inf = (long long) 2e18 + 10;
  * Time Complexity:
  *     Update: O(log n)
  *     Query: O(log n)
- * Verification: N/A
+ * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/usaco/2018/dec/plat/2/main.cpp
  */
 
-struct segnode {
+class sparseseg {
+private:
     int ll, rr;  // [ll, rr]
-    segnode* c[2];  // c[0] = left child, c[1] = right child
+    sparseseg* c[2];  // c[0] = left child, c[1] = right child
+
+public:
     struct node;
 
-    segnode(int _ll, int _rr) : ll(_ll), rr(_rr) { c[0] = c[1] = nullptr; }
+    sparseseg(int _ll, int _rr) : ll(_ll), rr(_rr) {
+        c[0] = c[1] = nullptr;
+    }
 
+private:
     // create child nodes (if necessary)
     void extend() {
         if (!c[0] && ll < rr) {
             int m = (ll + rr) >> 1;
-            c[0] = new segnode(ll, m);
-            c[1] = new segnode(m + 1, rr);
+            c[0] = new sparseseg(ll, m);
+            c[1] = new sparseseg(m + 1, rr);
         }
     }
 
+public:
     // update point x
     template <typename... Ts>
     void update(int x, const Ts&... v) {
@@ -55,7 +62,7 @@ struct segnode {
     // query range [l, r]
     node query(int l, int r) {
         if (l <= ll && rr <= r) return nv;
-        if (max(ll, l) > min(r, rr)) return segnode(max(ll, l), min(rr, r)).nv;
+        if (max(ll, l) > min(r, rr)) return sparseseg(max(ll, l), min(rr, r)).nv;
         extend();
         return unite(c[0]->query(l, r), c[1]->query(l, r));
     }
@@ -77,7 +84,7 @@ struct segnode {
         return res;
     }
 
-    
+private:
     // pull child nodes into parent node
     inline void pull() {
         nv = unite(c[0]->nv, c[1]->nv);
@@ -92,7 +99,7 @@ int main() {
     a.push_back(n);
     vector<int> max_length(n + 1), stk(n + 1, -1);
     vector<long long> dp(n + 1);
-    vector<segnode> seg(n + 1, segnode(0, n));
+    vector<sparseseg> seg(n + 1, sparseseg(0, n));
     max_length[n] = 0;
     stk[0] = n;
     dp[n] = 1;

@@ -24,9 +24,14 @@ using namespace std;
  *     https://github.com/mQfZ/competitive-programming/blob/master/src/cses/1143/main.cpp
  */
 
-struct segtree {
+class segtree {
+private:
     int n;
+
+public:
     struct node;
+
+private:
     vector<node> tree;
 
     void build(int x, int l, int r) {
@@ -126,6 +131,7 @@ struct segtree {
         return res;
     }
 
+public:
     segtree(int _n = -1) {
         if (_n >= 0) init(_n);
     }
@@ -192,6 +198,7 @@ struct segtree {
         return res;
     }
 
+private:
     // push lazy propogation of parent node into child nodes
     inline void push(int x, int l, int r) {
         int m = (l + r) >> 1;

@@ -8,22 +8,38 @@ using namespace std;
 #define dbgn(...) 0
 #endif
 
+/**
+ * Matrix
+ * Description:
+ *    Basic matrix operations (addition, subtraction, multiplication). Uses
+ *    vectors, but can be switched to arrays to reduce overhead and speed up
+ *    code. 
+ * Time Complexity:
+ *     Addition/Subtraction: O(r * c) for r by c matrix
+ *     Multiplication: O(r * c * h) for r by c matrix * c by h matrix
+ *     Exponentiation: O(n ^ 3 * log2(k)) for n by n matrix
+ * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/cf/gym/102644/D/main.cpp
+ */
+
 template <typename T>
-struct matrix {
+class matrix {
+private:
     // switch matrix type to array for performance boost (if TLE)
     using MT = vector<vector<T>>;
     // using MT = array<array<T, COLS>, ROWS>;
-    static constexpr bool RS = is_same_v<MT, vector<typename MT::value_type>>;
-
+    
     int rows, cols;
     MT data;
 
+public:
     matrix() : matrix(0, 0) {}
     matrix(int _rows, int _cols) : rows(_rows), cols(_cols), data() {
-        if constexpr (RS) data.assign(rows, vector<T>(cols));
+        if constexpr (is_same_v<MT, vector<typename MT::value_type>>)
+            data.assign(rows, vector<T>(cols));
         else assert(rows <= (int) data.size() && cols <= (int) data[0].size());
     }
-    matrix(const vector<vector<T>>& _data) : matrix((int) _data.size(), (int) _data[0].size()) {
+    matrix(const vector<vector<T>>& _data) :
+                        matrix((int) _data.size(), (int) _data[0].size()) {
         for (int i = 0; i < rows; ++i) {
             assert((int) _data[i].size() == cols);
             for (int j = 0; j < cols; ++j) data[i][j] = _data[i][j];
@@ -49,12 +65,13 @@ struct matrix {
         assert(cols == o.rows);
         matrix res(rows, o.cols);
         for (int i = 0; i < rows; ++i) for (int j = 0; j < cols; ++j)
-            for (int k = 0; k < o.cols; ++k) res.data[i][k] += data[i][j] * o.data[j][k];
+            for (int k = 0; k < o.cols; ++k)
+                res.data[i][k] += data[i][j] * o.data[j][k];
         return res;
     }
     matrix& operator*=(const matrix& o) { return *this = (*this) * o; }
 
-    typename MT::value_type& operator[](int i) { return data[i]; };
+    typename MT::value_type& operator[](size_t i) { return data[i]; };
 
     static matrix make_id(int n) {
         matrix m(n, n);

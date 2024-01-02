@@ -18,16 +18,18 @@ using namespace std;
  */
 
 template <int Nb>
-struct bitset_find : bitset<Nb> {
-    static constexpr int array_size = (Nb + 63) / 64;
-    
-    template <typename... Args>
-    bitset_find(Args... args) : bitset<Nb>(args...) {}
+class bitset_find : public bitset<Nb> {
+private:
+    static constexpr int SZ = (Nb + 63) / 64;
 
     union raw_cast {
-        array<uint64_t, array_size> a;
+        array<uint64_t, SZ> a;
         bitset_find b;
     };
+
+public:
+    template <typename... Ts>
+    bitset_find(Ts... args) : bitset<Nb>(args...) {}
 
     // first set bit after i, else size of bitset
     int find_next(int i) const {
@@ -38,9 +40,7 @@ struct bitset_find : bitset<Nb> {
         const auto &a = ((const raw_cast *) (this))->a;
         uint64_t buf = a[p] & (~0ULL - (1ULL << (i & 63)) + 1);
         if (buf) return p * 64 + __builtin_ffsll(buf) - 1;
-        while (++p < array_size) {
-            if (a[p]) return p * 64 + __builtin_ffsll(a[p]) - 1;
-        }
+        while (++p < SZ) if (a[p]) return p * 64 + __builtin_ffsll(a[p]) - 1;
         return Nb;
     }
 
@@ -53,9 +53,7 @@ struct bitset_find : bitset<Nb> {
         const auto &a = ((const raw_cast *) (this))->a;
         uint64_t buf = a[p] & ((1ULL << (i & 63)) - 1);
         if (buf != 0) return p * 64 + 63 - __builtin_clzll(buf);
-        while (p--) {
-            if (a[p]) return p * 64 + 63 - __builtin_clzll(a[p]);
-        }
+        while (p--) if (a[p]) return p * 64 + 63 - __builtin_clzll(a[p]);
         return -1;
     }
 

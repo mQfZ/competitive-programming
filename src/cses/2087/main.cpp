@@ -15,7 +15,7 @@ using namespace std;
  *    coordinate for any x, assuming queries and slopes are monotonic. Might
  *    have issues when comparing doubles.
  * Time Complexity: O(1)
- * Verification: N/A
+ * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/cses/2087/main.cpp
  */
 
 template <typename T>
@@ -27,7 +27,8 @@ struct line {
 };
 
 template <typename T>
-struct line_container_deque {
+class line_container_deque {
+private:
     static const T inf = numeric_limits<T>::max();
     deque<line<T>> dq;
 
@@ -35,6 +36,7 @@ struct line_container_deque {
         return is_integral_v<T> ? a / b - ((a ^ b) < 0 && a % b) : a / b;
     }
 
+public:
     // add line y = mx + b, where m is monotonic
     void add(T m, T b) {
         line<T> l = {m, b, -inf};
