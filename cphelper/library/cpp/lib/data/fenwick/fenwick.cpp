@@ -11,14 +11,16 @@ using namespace std;
  * Time Complexity:
  *    Update: O(log n)
  *    Query: O(log n)
- * Verification: https://judge.yosupo.jp/submission/173798
+ * Verification: https://judge.yosupo.jp/submission/180944
  */
 
 template <typename T>
-struct fenwick {
+class fenwick {
+private:
     int n;
     vector<T> tree;
 
+public:
     fenwick(int _n = -1) {
         if (_n >= 0) init(_n);
     }
@@ -29,7 +31,7 @@ struct fenwick {
     }
 
     // increment point x by v
-    void add(int x, T v) {
+    void update(int x, T v) {
         for (++x; x <= n; x += x & -x) {
             tree[x - 1] += v;
         }

@@ -11,12 +11,13 @@ using namespace std;
  * Time Complexity:
  *     Addition/Subtraction: O(r * c) for r by c matrix
  *     Multiplication: O(r * c * h) for r by c matrix * c by h matrix
- *     Exponentiation: O(n ^ 3 * log2(k)) for n by n matrix
+ *     Exponentiation: O(n ^ 3 * log(k)) for n by n matrix
  * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/cf/gym/102644/D/main.cpp
  */
 
 template <typename T>
-struct matrix {
+class matrix {
+private:
     // switch matrix type to array for performance boost (if TLE)
     using MT = vector<vector<T>>;
     // using MT = array<array<T, COLS>, ROWS>;
@@ -24,6 +25,7 @@ struct matrix {
     int rows, cols;
     MT data;
 
+public:
     matrix() : matrix(0, 0) {}
     matrix(int _rows, int _cols) : rows(_rows), cols(_cols), data() {
         if constexpr (is_same_v<MT, vector<typename MT::value_type>>)

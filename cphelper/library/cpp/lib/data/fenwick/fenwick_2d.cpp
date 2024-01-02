@@ -17,10 +17,12 @@ using namespace std;
  */
 
 template <typename T>
-struct fenwick2d {
+class fenwick2d {
+private:
     int n, m;
     vector<vector<T>> tree;
 
+public:
     fenwick2d(int _n = -1, int _m = -1) {
         if (_n >= 0 && _m >= 0) init(_n, _m);
     }
@@ -32,7 +34,7 @@ struct fenwick2d {
     }
 
     // increment point (x, y) by v
-    void add(int x, int y, T v) {
+    void update(int x, int y, T v) {
         for (int i = x + 1; i <= n; i += i & -i) {
             for (int j = y + 1; j <= m; j += j & -j) {
                 tree[i - 1][j - 1] += v;

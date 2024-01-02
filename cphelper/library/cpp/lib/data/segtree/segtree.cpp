@@ -9,14 +9,20 @@ using namespace std;
  * Time Complexity:
  *     Update: O(log n)
  *     Query: O(log n)
- * Verification: https://judge.yosupo.jp/submission/173605
+ * Verification: https://judge.yosupo.jp/submission/180949
  */
 
-struct segtree {
+class segtree {
+private:
     int n;
+
+public:
     struct node;
+
+private:
     vector<node> tree;
 
+public:
     segtree(int _n = -1) {
         if (_n >= 0) init(_n);
     }
@@ -59,7 +65,8 @@ struct segtree {
         res.val = a.val + b.val;
         return res;
     }
-    
+
+private:
     // pull child nodes into parent node
     inline void pull(int p) {
         tree[p] = unite(tree[2 * p], tree[2 * p + 1]);

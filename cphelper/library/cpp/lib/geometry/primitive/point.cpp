@@ -7,7 +7,7 @@ using namespace std;
  * Description:
  *    2D point class (used in place if complex<T>).
  * Time Complexity: N/A
- * Verification: N/A
+ * Verification: https://codeforces.com/contest/1299/submission/235671377
  */
 
 using dist_t = long double;

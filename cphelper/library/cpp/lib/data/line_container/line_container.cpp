@@ -8,7 +8,7 @@ using namespace std;
  *    Given a set of lines in the form mx + b, computes the greatest
  *    y-coordinate for any x. Might have issues when comparing doubles.
  * Time Complexity: O(log n)
- * Verification: https://codeforces.com/contest/1083/submission/236297389
+ * Verification: https://codeforces.com/contest/1083/submission/239959317
  */
 
 template <typename T>
@@ -20,7 +20,8 @@ struct line {
 };
 
 template <typename T>
-struct line_container {
+class line_container {
+private:
     static const T inf = numeric_limits<T>::max();
     multiset<line<T>, less<>> ms;
 
@@ -36,6 +37,7 @@ struct line_container {
         return x->p >= y->p;
     }
     
+public:
     // add line y = mx + b
     void add(T m, T b) {
         auto z = ms.insert({m, b, 0}), y = z++, x = y;

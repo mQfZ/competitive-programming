@@ -12,34 +12,36 @@ using namespace std;
  * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/usaco/2022/dec/gold/2/bitset.cpp
  */
 
-template <int N>
-struct bitset_find : bitset<N> {
-    static constexpr int SZ = (N + 63) / 64;
-    
-    template <typename... Ts>
-    bitset_find(Ts... args) : bitset<N>(args...) {}
+template <int Nb>
+class bitset_find : public bitset<Nb> {
+private:
+    static constexpr int SZ = (Nb + 63) / 64;
 
     union raw_cast {
         array<uint64_t, SZ> a;
         bitset_find b;
     };
 
+public:
+    template <typename... Ts>
+    bitset_find(Ts... args) : bitset<Nb>(args...) {}
+
     // first set bit after i, else size of bitset
     int find_next(int i) const {
-        assert(-1 <= i && i < N);
-        if (i == N - 1) return N;
+        assert(-1 <= i && i < Nb);
+        if (i == Nb - 1) return Nb;
         if ((*this)[++i]) return i;
         int p = i / 64;
         const auto &a = ((const raw_cast *) (this))->a;
         uint64_t buf = a[p] & (~0ULL - (1ULL << (i & 63)) + 1);
         if (buf) return p * 64 + __builtin_ffsll(buf) - 1;
         while (++p < SZ) if (a[p]) return p * 64 + __builtin_ffsll(a[p]) - 1;
-        return N;
+        return Nb;
     }
 
     // last set bit before i, else -1
     int find_prev(int i) const {
-        assert(0 <= i && i <= N);
+        assert(0 <= i && i <= Nb);
         if (i == 0) return -1;
         if ((*this)[--i]) return i;
         int p = i / 64;
@@ -54,5 +56,5 @@ struct bitset_find : bitset<N> {
     inline int find_first() const { return find_next(-1); }
 
     // last set bit, else -1
-    inline int find_last() const { return find_prev(N); }
+    inline int find_last() const { return find_prev(Nb); }
 };
