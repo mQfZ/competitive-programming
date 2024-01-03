@@ -511,6 +511,7 @@
             "options": [
                 "debug",
                 "empty",
+                "library",
                 "minimal",
                 "usaco"
             ],
