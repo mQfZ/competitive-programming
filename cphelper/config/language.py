@@ -25,9 +25,11 @@ def cpp_snippet_expansion(snippets_dict: dict[Path, str], lib_dir: Path,
     for i in range(len(content)):
         line = content[i]
 
-        if line in ["#include <bits/stdc++.h>",
+        if (line in ["#include <bits/stdc++.h>",
                     "using namespace std;",
-                    "#pragma once"] \
+                    "#pragma once"]
+                    and not (file.parent.name == "header" and
+                            file.parent.parent.name == "misc")) \
                 or line.endswith("noimport"):
             continue
         
