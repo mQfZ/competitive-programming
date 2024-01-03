@@ -7,7 +7,7 @@ using namespace std;
  * Description:
  *    Disjoint Set Union with path compression and union by size. Add edges 
  *    and test connectivity.
- * Time Complexity: O(alpha(N))
+ * Time Complexity: O(alpha(n))
  * Verification: https://judge.yosupo.jp/submission/180951
  */
 
