@@ -9,10 +9,12 @@ using namespace std;
 #endif
 
 /**
- * Line
+ * Line Container Deque
  * Description:
- *    Line class for line containers.
- * Time Complexity: N/A
+ *    Given a set of lines in the form mx + b, computes the greatest y
+ *    coordinate for any x, assuming queries and slopes are monotonic. Might
+ *    have issues when comparing doubles.
+ * Time Complexity: O(1)
  * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/cses/2087/main.cpp
  */
 
@@ -23,16 +25,6 @@ struct line {
     bool operator<(const line& o) const { return m < o.m; }
     bool operator<(T x) const { return p < x; }
 };
-
-/**
- * Line Container Deque
- * Description:
- *    Given a set of lines in the form mx + b, computes the greatest y
- *    coordinate for any x, assuming queries and slopes are monotonic. Might
- *    have issues when comparing doubles.
- * Time Complexity: O(1)
- * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/cses/2087/main.cpp
- */
 
 template <typename T>
 class line_container_deque {
