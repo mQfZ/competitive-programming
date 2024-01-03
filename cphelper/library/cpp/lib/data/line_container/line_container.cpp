@@ -2,8 +2,6 @@
 using namespace std;
 #pragma once
 
-#include <lib/data/line_container/line.cpp>
-
 /**
  * Line Container
  * Description:
@@ -12,6 +10,14 @@ using namespace std;
  * Time Complexity: O(log n)
  * Verification: https://codeforces.com/contest/1083/submission/239959317
  */
+
+template <typename T>
+struct line {
+    mutable T m, b, p;
+    T eval(T x) const { return m * x + b; }
+    bool operator<(const line& o) const { return m < o.m; }
+    bool operator<(T x) const { return p < x; }
+};
 
 template <typename T>
 class line_container {
