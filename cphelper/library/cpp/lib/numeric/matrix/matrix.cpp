@@ -76,7 +76,7 @@ public:
     friend matrix pow(matrix m, int64_t p) {
         assert(m.rows == m.cols && p >= 0);
         matrix res = make_id(m.rows);
-        for (; p > 0; p /= 2, m *= m) if (p & 1) res *= m;
+        while (p) { if (p & 1) res *= m; p >>= 1; m *= m; }
         return res;
     }
 };
