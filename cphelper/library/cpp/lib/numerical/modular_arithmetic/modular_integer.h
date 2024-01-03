@@ -90,4 +90,3 @@ public:
 
 constexpr int md = 1000000007;  // 998244353;
 using mint = modular<md>;
-

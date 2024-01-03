@@ -2,7 +2,7 @@
 using namespace std;
 #pragma once
 
-#include <lib/geometry/primitive/point.cpp>
+#include <lib/geometry/primitives/point.h>
 
 /**
  * Convext Hull

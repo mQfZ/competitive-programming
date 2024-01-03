@@ -2,7 +2,7 @@
 using namespace std;
 #pragma once
 
-#include <lib/numeric/mint/mint.cpp>
+#include <lib/numerical/modular_arithmetic/modular_integer.h>
 
 /**
  * Combinatorics

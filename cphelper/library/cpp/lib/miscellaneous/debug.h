@@ -1,3 +1,7 @@
+#include <bits/stdc++.h>
+using namespace std;
+#pragma once
+
 #ifdef LOCAL
 #include <debug.h>
 #else

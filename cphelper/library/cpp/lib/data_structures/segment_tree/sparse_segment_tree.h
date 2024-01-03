@@ -5,7 +5,7 @@ using namespace std;
  * Sparse Segment Tree
  * Description:
  *    Segment Tree that does not allocate storage for nodes with no data.
- *    segnode represents the segtree node, node represents the data.
+ *    sparseseg represents the segtree node, node represents the data.
  * Time Complexity:
  *     Update: O(log n)
  *     Query: O(log n)
