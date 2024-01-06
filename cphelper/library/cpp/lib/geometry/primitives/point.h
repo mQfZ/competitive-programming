@@ -63,13 +63,17 @@ struct point {
         return stream << "(" << p.x << ", " << p.y << ")"; }
 };
 
+// first two parameters are two unqiue points on the line (forming a 
+// direction), and the third is the point being tested
 // 1 = left, 0 = on, -1 = right
 template <typename T>
 int side_of(const point<T>& s, const point<T>& e, const point<T>& p) {
     return sign(s.cross(e, p));
 }
 
-// 1 iff p is on line segment from s to e
+// first two parameters are two unqiue points on the line, and the third is the 
+// point being tested
+// 1 iff p is on line segment
 template <typename T>
 bool on_seg(const point<T>& s, const point<T>& e, const point<T>& p) {
     return sign(p.cross(s, e)) == 0 && sign((s - p).dot(e - p)) <= 0;
