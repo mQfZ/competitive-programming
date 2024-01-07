@@ -30,14 +30,14 @@ public:
     void init(int _n, int _m) {
         n = _n;
         m = _m;
-        tree.assign(n, vector<T>(m, {}));
+        tree.assign(n + 1, vector<T>(m + 1, {}));
     }
 
     // increment point (x, y) by v
     void update(int x, int y, T v) {
         for (int i = x + 1; i <= n; i += i & -i) {
             for (int j = y + 1; j <= m; j += j & -j) {
-                tree[i - 1][j - 1] += v;
+                tree[i][j] += v;
             }
         }
     }
@@ -47,7 +47,7 @@ public:
         T total = {};
         for (int i = x + 1; i > 0; i -= i & -i) {
             for (int j = y + 1; j > 0; j -= j & -j) {
-                total += tree[i - 1][j - 1];
+                total += tree[i][j];
             }
         }
         return total;

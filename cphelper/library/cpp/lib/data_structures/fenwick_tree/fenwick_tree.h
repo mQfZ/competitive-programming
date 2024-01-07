@@ -27,13 +27,13 @@ public:
 
     void init(int _n) {
         n = _n;
-        tree.assign(n, {});
+        tree.assign(n + 1, {});
     }
 
     // increment point x by v
     void update(int x, T v) {
         for (++x; x <= n; x += x & -x) {
-            tree[x - 1] += v;
+            tree[x] += v;
         }
     }
 
@@ -41,7 +41,7 @@ public:
     T query(int x) {
         T total = 0;
         for (++x; x > 0; x -= x & -x) {
-            total += tree[x - 1];
+            total += tree[x];
         }
         return total;
     }
