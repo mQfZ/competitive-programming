@@ -8,9 +8,9 @@ using namespace std;
  * Lazy Segment Tree
  * Description:
  *    1D range update and range query where unite is any associatve operation. 
- *    Uses lazy propogation to range update. Node must have default value(s)
- *    set, an apply lazy propgation method, and a static unite method. Prop 
- *    must have default value(s) and an extend method.
+ *    Uses lazy propogation to range update. Node class must have default
+ *    value(s) set, an apply lazy propgation method, and a static unite method.
+ *    Update class must have default value(s) and an extend method.
  * Time Complexity:
  *     Build: O(n)
  *     Update: O(log n)

@@ -6,7 +6,7 @@ using namespace std;
  * Segment Tree
  * Description:
  *    1D point update and range query where unite is any associatve operation.
- *    Node must have default value(s) set and a static unite method.
+ *    Node class must have default value(s) set and a static unite method.
  * Time Complexity:
  *     Build: O(n)
  *     Update: O(log n)
@@ -86,9 +86,9 @@ struct node {
     long long val = 0;
 
     // unite two nodes into one
-    static node unite(const node& a, const node& b) {
+    static node unite(const node& ln, const node& rn) {
         node res;
-        res.val = a.val + b.val;
+        res.val = ln.val + rn.val;
         return res;
     }
 };
