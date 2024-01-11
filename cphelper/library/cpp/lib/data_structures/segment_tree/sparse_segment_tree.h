@@ -6,32 +6,34 @@ using namespace std;
  * Description:
  *    Segment Tree that does not allocate storage for nodes with no data.
  *    Node class must have default value(s) set and a static unite method.
+ *    Range type (int, long long) can be changed.
  * Time Complexity:
  *     Update: O(log n)
  *     Query: O(log n)
  * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/usaco/2018/dec/plat/2/main.cpp
  */
 
-template <typename N>
+template <typename N, typename T>
 class sparse_node {
-private:
-    int ll, rr;
+protected:
+    T ll, rr;
     N data;
     sparse_node* c[2];
 
 public:
-    sparse_node(int _ll, int _rr) : sparse_node(_ll, _rr, N()) {}
+    sparse_node(T _n) : sparse_node(0, _n - 1, N()) {}
+    sparse_node(T _ll, T _rr) : sparse_node(_ll, _rr, N()) {}
     
-    sparse_node(int _ll, int _rr, const N& _data) : ll(_ll), rr(_rr), data(_data) {
+    sparse_node(T _ll, T _rr, const N& _data) : ll(_ll), rr(_rr), data(_data) {
         c[0] = c[1] = nullptr;
     }
 
-private:
+protected:
     inline void pull() {
         data = N::unite(c[0]->data, c[1]->data);
     }
 
-    void extend() {
+    inline void extend() {
         if (!c[0] && ll < rr) {
             int m = (ll + rr) >> 1;
             c[0] = new sparse_node(ll, m);

@@ -19,13 +19,13 @@ using namespace std;
  */
 
 class segtree {
-private:
+protected:
     int n;
 
 public:
     struct node;
 
-private:
+protected:
     vector<node> tree;
 
     void build(int x, int l, int r) {
@@ -194,7 +194,7 @@ public:
         return res;
     }
 
-private:
+protected:
     // push lazy propogation of parent node into child nodes
     inline void push(int x, int l, int r) {
         int m = (l + r) >> 1;

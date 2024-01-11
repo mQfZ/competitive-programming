@@ -16,7 +16,7 @@ using namespace std;
 
 template <typename T>
 class fenwick {
-private:
+protected:
     int n;
     vector<T> tree;
 

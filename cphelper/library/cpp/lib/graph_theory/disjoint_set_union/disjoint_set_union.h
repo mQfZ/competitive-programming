@@ -12,7 +12,7 @@ using namespace std;
  */
 
 class dsu {
-private:
+protected:
     int n;
     vector<int> e;
 

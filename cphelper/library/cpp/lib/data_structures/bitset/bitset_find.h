@@ -14,7 +14,7 @@ using namespace std;
 
 template <int Nb>
 class bitset_find : public bitset<Nb> {
-private:
+protected:
     static constexpr int SZ = (Nb + 63) / 64;
 
     union raw_cast {

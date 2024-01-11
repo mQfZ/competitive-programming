@@ -21,7 +21,7 @@ using namespace std;
 
 template <typename N, typename U>
 class lazy_segtree {
-private:
+protected:
     int n, height;
     vector<N> tree;
     vector<U> lazy;
@@ -48,7 +48,7 @@ public:
         build(v);
     }
 
-private:
+protected:
     inline void apply_lazy(int p, const U& u) {
         tree[p].apply_update(u);
         if (p < n) lazy[p].extend(u);
@@ -92,7 +92,7 @@ private:
         for (int i = n - 1; i > 0; --i) pull(i);
     }
 
-public:
+protected:
     // update point x
     void update(int x, const N& v) {
         assert(0 <= x && x < n);

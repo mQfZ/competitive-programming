@@ -15,7 +15,7 @@ public:
     using T = decay_t<decltype(_MOD)>;
     static constexpr T MOD = _MOD;
 
-private:
+protected:
     T v;
 
     template <typename U>

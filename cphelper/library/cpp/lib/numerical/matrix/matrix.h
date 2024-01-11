@@ -17,7 +17,7 @@ using namespace std;
 
 template <typename T>
 class matrix {
-private:
+protected:
     // switch matrix type to array for performance boost (if TLE)
     using MT = vector<vector<T>>;
     // using MT = array<array<T, COLS>, ROWS>;

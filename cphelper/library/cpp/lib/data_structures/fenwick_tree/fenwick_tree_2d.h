@@ -18,7 +18,7 @@ using namespace std;
 
 template <typename T>
 class fenwick2d {
-private:
+protected:
     int n, m;
     vector<vector<T>> tree;
 

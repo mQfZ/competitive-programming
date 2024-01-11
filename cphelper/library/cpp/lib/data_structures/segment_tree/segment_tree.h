@@ -16,7 +16,7 @@ using namespace std;
 
 template <typename N>
 class segtree {
-private:
+protected:
     int n;
     vector<N> tree;
 
@@ -39,7 +39,7 @@ public:
         build(v);
     }
 
-private:
+protected:
     inline void pull(int p) {
         tree[p] = N::unite(tree[2 * p], tree[2 * p + 1]);
     }
