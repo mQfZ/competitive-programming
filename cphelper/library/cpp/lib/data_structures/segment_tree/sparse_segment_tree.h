@@ -13,7 +13,7 @@ using namespace std;
  * Verification: https://github.com/mQfZ/competitive-programming/blob/master/src/usaco/2018/dec/plat/2/main.cpp
  */
 
-template <typename N, typename T>
+template <typename N, typename T = int>
 class sparse_node {
 protected:
     T ll, rr;
@@ -33,7 +33,7 @@ protected:
         data = N::unite(c[0]->data, c[1]->data);
     }
 
-    inline void extend() {
+    virtual inline void extend() {
         if (!c[0] && ll < rr) {
             int m = (ll + rr) >> 1;
             c[0] = new sparse_node(ll, m);
@@ -42,11 +42,30 @@ protected:
     }
 
 public:
+    // copy node
+    sparse_node* copy() {
+        return new sparse_node(ll, rr, data);
+    }
+
     // update point x
     void update(int x, const N& v) {
         extend();
         if (!c[0]) data = v;
         else c[x > c[0]->rr]->update(x, v), pull();
+    }
+
+    // returns an updated point x without overriding old point x
+    sparse_node* update_new(int x, const N& v) {
+        extend();
+        sparse_node* d = new sparse_node(ll, rr);
+        if (!c[0]) d->data = v;
+        else {
+            int w = x > c[0]->rr;
+            d->c[w] = c[w]->update_new(x, v);
+            d->c[1 - w] = c[1 - w];
+            d->pull();
+        }
+        return d;
     }
 
     // query point x
@@ -62,17 +81,5 @@ public:
         if (max(ll, l) > min(r, rr)) return N();
         extend();
         return N::unite(c[0]->query(l, r), c[1]->query(l, r));
-    }
-};
-
-struct node {
-    // make sure to set default value for a node of size 0
-    long long val = 0;
-
-    // unite two nodes into one
-    static node unite(const node& ln, const node& rn) {
-        node res;
-        res.val = ln.val + rn.val;
-        return res;
     }
 };

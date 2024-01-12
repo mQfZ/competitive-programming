@@ -11,7 +11,7 @@ using namespace std;
  *     Build: O(n)
  *     Update: O(log n)
  *     Query: O(log n)
- * Verification: https://judge.yosupo.jp/submission/182462
+ * Verification: https://judge.yosupo.jp/submission/182986
  */
 
 template <typename N>
@@ -78,17 +78,5 @@ public:
             if (r & 1) rb = N::unite(tree[--r], rb);
         }
         return N::unite(ra, rb);
-    }
-};
-
-struct node {
-    // make sure to set default value for a node of size 0
-    long long val = 0;
-
-    // unite two nodes into one
-    static node unite(const node& ln, const node& rn) {
-        node res;
-        res.val = ln.val + rn.val;
-        return res;
     }
 };
